@@ -486,16 +486,66 @@ function createCard(sentence, preview = false) {
   return node;
 }
 
-function speakChinese(text, button) {
-  if (!('speechSynthesis' in window)) return alert('Speech is not supported in this browser. Please try Chrome, Edge or Safari.');
+function voiceStatus(button, message) {
+  const card = button && button.closest('.sentence-card');
+  const status = card && card.querySelector('.card-recording-status');
+  if (status) status.textContent = message;
+}
+
+function availableVoices() {
+  return 'speechSynthesis' in window ? speechSynthesis.getVoices() : [];
+}
+
+function waitForVoices(timeout = 1800) {
+  const current = availableVoices();
+  if (current.length) return Promise.resolve(current);
+  return new Promise(resolve => {
+    let finished = false;
+    const done = () => {
+      if (finished) return;
+      finished = true;
+      speechSynthesis.removeEventListener('voiceschanged', done);
+      resolve(availableVoices());
+    };
+    speechSynthesis.addEventListener('voiceschanged', done, {once:true});
+    setTimeout(done, timeout);
+  });
+}
+
+function exactVoiceFor(voices, locale) {
+  const wanted = String(locale || '').toLowerCase();
+  return voices.find(voice => String(voice.lang || '').toLowerCase() === wanted) || null;
+}
+
+async function speakChinese(text, button) {
+  if (!('speechSynthesis' in window)) {
+    voiceStatus(button, 'Speech is not supported in this browser.');
+    return;
+  }
+  const voices = await waitForVoices();
+  // Never substitute Mainland Mandarin (zh-CN) for Taiwanese Mandarin.
+  const voice = exactVoiceFor(voices, 'zh-TW');
+  if (!voice) {
+    voiceStatus(button, 'Taiwan Mandarin voice (zh-TW) is not installed on this device.');
+    return;
+  }
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = state.settings.defaultVoice || 'zh-TW';
+  utterance.lang = 'zh-TW';
+  utterance.voice = voice;
   utterance.rate = Number(state.settings.speechRate) || 0.85;
-  const voices = speechSynthesis.getVoices();
-  utterance.voice = voices.find(v => v.lang.toLowerCase() === 'zh-tw') || voices.find(v => v.lang.toLowerCase().startsWith('zh')) || null;
-  utterance.onstart = () => button.classList.add('speaking');
-  utterance.onend = utterance.onerror = () => button.classList.remove('speaking');
+  utterance.onstart = () => {
+    button.classList.add('speaking');
+    voiceStatus(button, `Playing Taiwan Mandarin: ${voice.name}`);
+  };
+  utterance.onend = () => {
+    button.classList.remove('speaking');
+    voiceStatus(button, 'Taiwan Mandarin playback finished.');
+  };
+  utterance.onerror = () => {
+    button.classList.remove('speaking');
+    voiceStatus(button, 'Taiwan Mandarin playback failed on this device.');
+  };
   speechSynthesis.speak(utterance);
 }
 
@@ -503,18 +553,41 @@ function speakHindi(text, button) {
   return speakSourceLanguage(text, 'hi-IN', button);
 }
 
-function speakSourceLanguage(text, locale, button) {
-  if (!('speechSynthesis' in window)) return alert('Speech is not supported in this browser. Please try Chrome, Edge or Safari.');
+async function speakSourceLanguage(text, locale, button) {
+  if (!('speechSynthesis' in window)) {
+    voiceStatus(button, 'Speech is not supported in this browser.');
+    return;
+  }
+  const voices = await waitForVoices();
+  const normalizedLocale = String(locale || '').toLowerCase();
+  const languageCode = normalizedLocale.split('-')[0];
+  const voice = exactVoiceFor(voices, normalizedLocale) ||
+    voices.find(item => String(item.lang || '').toLowerCase().split('-')[0] === languageCode) || null;
+  const profile = Object.values(LANGUAGE_PROFILES).find(item =>
+    String(item.locale || '').toLowerCase() === normalizedLocale
+  ) || getLanguageProfile(state.sourceLanguage);
+  if (!voice) {
+    const languageName = normalizedLocale === 'km-kh' ? 'Khmer' : profile.name;
+    voiceStatus(button, `${languageName} voice (${locale}) is not available on this device. A cloud voice is required.`);
+    return;
+  }
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = locale;
+  utterance.voice = voice;
   utterance.rate = 0.85;
-  const voices = speechSynthesis.getVoices();
-  const normalizedLocale = locale.toLowerCase();
-  const languageCode = normalizedLocale.split('-')[0];
-  utterance.voice = voices.find(v => v.lang.toLowerCase() === normalizedLocale) || voices.find(v => v.lang.toLowerCase().startsWith(languageCode)) || null;
-  utterance.onstart = () => button.classList.add('speaking');
-  utterance.onend = utterance.onerror = () => button.classList.remove('speaking');
+  utterance.onstart = () => {
+    button.classList.add('speaking');
+    voiceStatus(button, `Playing ${profile.name}: ${voice.name}`);
+  };
+  utterance.onend = () => {
+    button.classList.remove('speaking');
+    voiceStatus(button, `${profile.name} playback finished.`);
+  };
+  utterance.onerror = () => {
+    button.classList.remove('speaking');
+    voiceStatus(button, `${profile.name} playback failed on this device.`);
+  };
   speechSynthesis.speak(utterance);
 }
 
