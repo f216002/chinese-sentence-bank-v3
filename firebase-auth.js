@@ -1,9 +1,11 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js';
 import {
   getAuth,
+  getRedirectResult,
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
   signOut
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -12,6 +14,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
+const isFirebaseHosting = location.hostname === 'my-chinese-sentence-bank-v3.web.app';
 
 const signInButton = document.getElementById('googleSignInButton');
 const signOutButton = document.getElementById('googleSignOutButton');
@@ -71,6 +74,12 @@ signInButton.addEventListener('click', async () => {
   signInButton.disabled = true;
   setAuthMessage('Opening Google sign-in…');
   try {
+    if (isFirebaseHosting) {
+      // Same-site redirect works reliably on iPhone without asking teachers to
+      // disable Safari's popup blocker or privacy protection.
+      await signInWithRedirect(auth, provider);
+      return;
+    }
     await signInWithPopup(auth, provider);
   } catch (error) {
     // Do not fall back to signInWithRedirect here. On GitHub Pages, some
@@ -94,6 +103,18 @@ signInButton.addEventListener('click', async () => {
     signInButton.disabled = false;
   }
 });
+
+// Surface redirect errors after Firebase Hosting returns from Google. The
+// signed-in state itself is published by onAuthStateChanged below.
+if (isFirebaseHosting) {
+  getRedirectResult(auth).catch(error => {
+    if (error.code === 'auth/unauthorized-domain') {
+      setAuthMessage('This Firebase Hosting domain has not yet been authorized.', true);
+    } else {
+      setAuthMessage(`Google sign-in failed: ${error.message || error.code}`, true);
+    }
+  });
+}
 
 signOutButton.addEventListener('click', async () => {
   signOutButton.disabled = true;
