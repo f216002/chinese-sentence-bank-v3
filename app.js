@@ -939,6 +939,34 @@ function loadBank() {
   setTimeout(() => { if (!window.__sentenceBankLoaded) showApiError('Google Sheets took too long to respond.'); }, 12000);
 }
 
+function showEmptyV3Bank(user = null) {
+  window.__sentenceBankLoaded = true;
+  state.sentences = [];
+  state.categories = [];
+  state.selectedCategories = new Set();
+  state.settings = {};
+  teacherAudioCache.clear();
+
+  $('bankName').textContent = 'My Chinese Sentence Bank';
+  $('ownerName').textContent = user
+    ? `Teacher workspace · ${user.displayName || user.email || 'Signed in'}`
+    : 'A personal language notebook';
+  document.title = 'My Chinese Sentence Bank';
+  $('sentenceCount').textContent = '0';
+  $('categoryCount').textContent = '0';
+  $('apiStatus').className = user ? 'live-status ready' : 'live-status';
+  $('apiStatus').innerHTML = user
+    ? '<i></i> Personal V3 bank ready'
+    : '<i></i> Sign in to open your bank';
+  renderFilters();
+  renderSentences();
+}
+
+function handleV3AuthChange(event) {
+  const authState = event.detail || window.MCSB_AUTH || {};
+  showEmptyV3Bank(authState.user || null);
+}
+
 $('startButton').addEventListener('click', () => $('createPrompt').scrollIntoView({behavior:'smooth'}));
 $('refreshButton').addEventListener('click', () => {
   $('refreshButton').disabled = true;
@@ -1023,4 +1051,8 @@ try { savedSourceLanguage = localStorage.getItem('csbSourceLanguage') || 'hi'; }
 $('sourceLanguage').value = LANGUAGE_PROFILES[savedSourceLanguage] ? savedSourceLanguage : 'hi';
 applyLanguageProfile($('sourceLanguage').value);
 initPronunciationLab();
-loadBank();
+// V3 never loads the shared V2 Google Sheet. Each teacher starts with an
+// empty bank and, after the Firestore phase, will load only documents stored
+// below that teacher's Firebase UID.
+showEmptyV3Bank(window.MCSB_AUTH?.user || null);
+window.addEventListener('mcsb-auth-changed', handleV3AuthChange);
