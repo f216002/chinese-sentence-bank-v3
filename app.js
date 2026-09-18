@@ -33,7 +33,14 @@ Do not add an introduction, conclusion, note or any additional section.
 Sentence to be explained:
 {{STUDENT_SENTENCE}}`;
 
-const state = { sentences: [], categories: [], selectedCategories: new Set(), settings: {}, preview: null };
+const state = {
+  sentences: [],
+  categories: [],
+  selectedCategories: new Set(),
+  settings: {},
+  preview: null,
+  sourceLanguage: 'hi'
+};
 const $ = (id) => document.getElementById(id);
 const sentenceModelAudio = new Audio();
 const teacherAudioCache = new Map();
@@ -45,7 +52,7 @@ let pendingModelSave = null;
 let pendingDeleteSentence = null;
 
 function parsePaste(text) {
-  const labels = ['HINDI', 'CHINESE', 'PINYIN', 'ROMAN', 'EXPLANATION', 'CATEGORY', 'TAGS', 'AI SOURCE'];
+  const labels = ['SOURCE', 'HINDI', 'TAMIL', 'THAI', 'KHMER', 'VIETNAMESE', 'INDONESIAN', 'NEPALI', 'BENGALI', 'BANGLA', 'SPANISH', 'ENGLISH', 'CHINESE', 'PINYIN', 'ROMANIZATION', 'ROMAN', 'EXPLANATION', 'CATEGORY', 'TAGS', 'AI SOURCE'];
   const found = {};
   const pattern = new RegExp(`(?:^|\\n)\\s*(?:\\*\\*)?\\s*(${labels.join('|')})\\s*:?\\s*(?:\\*\\*)?\\s*:?\\s*`, 'gi');
   const matches = [...text.matchAll(pattern)];
@@ -55,9 +62,18 @@ function parsePaste(text) {
     const end = index + 1 < matches.length ? matches[index + 1].index : text.length;
     found[key] = text.slice(start, end).trim();
   });
+  const profile = getLanguageProfile(state.sourceLanguage);
+  const legacySource = profile.legacyLabels.map(label => found[label]).find(Boolean) || '';
+  const sourceSentence = found.SOURCE || legacySource || found.HINDI || found.TAMIL || found.THAI || found.KHMER || found.VIETNAMESE || found.INDONESIAN || found.NEPALI || found.BENGALI || found.BANGLA || found.SPANISH || found.ENGLISH || '';
+  const romanization = found.ROMANIZATION || found.ROMAN || '';
   return {
-    hindiSentence: found.HINDI || '', chineseSentence: found.CHINESE || '',
-    pinyin: found.PINYIN || '', romanHindi: found.ROMAN || '', hindiExplanation: found.EXPLANATION || '',
+    sourceLanguage: profile.code,
+    sourceSentence,
+    romanization,
+    explanation: found.EXPLANATION || '',
+    // V2 compatibility aliases. Remove these after the Firebase migration.
+    hindiSentence: sourceSentence, chineseSentence: found.CHINESE || '',
+    pinyin: found.PINYIN || '', romanHindi: romanization, hindiExplanation: found.EXPLANATION || '',
     category: found.CATEGORY || 'Other', tags: found.TAGS || '',
     aiSource: found['AI SOURCE'] || 'ChatGPT / Gemini', originalPaste: text
   };
@@ -65,12 +81,13 @@ function parsePaste(text) {
 
 function buildPrompt() {
   const sentence = $('promptSentence').value.trim();
+  const profile = getLanguageProfile(state.sourceLanguage);
   if (!sentence) {
-    $('promptMessage').textContent = 'Type one Hindi, Romanized Hindi, or Chinese sentence first.';
+    $('promptMessage').textContent = `Type one ${profile.name} or Chinese sentence first.`;
     $('promptSentence').focus();
     return '';
   }
-  const prompt = AI_PROMPT_TEMPLATE.replace('{{STUDENT_SENTENCE}}', sentence);
+  const prompt = buildLanguagePrompt(profile, sentence);
   $('generatedPrompt').value = prompt;
   $('generatedPromptPanel').classList.remove('hidden');
   $('promptMessage').textContent = '';
@@ -129,9 +146,34 @@ function copyAndOpen(url) {
 }
 
 function romanHindiFor(sentence) {
+  if (sentence.romanization) return sentence.romanization;
   if (sentence.romanHindi) return sentence.romanHindi;
   if (!sentence.originalPaste) return '';
   return parsePaste(sentence.originalPaste).romanHindi;
+}
+
+function sourceSentenceFor(sentence) {
+  return sentence.sourceSentence || sentence.hindiSentence || '';
+}
+
+function sourceExplanationFor(sentence) {
+  return sentence.explanation || sentence.hindiExplanation || '';
+}
+
+function sourceLanguageFor(sentence) {
+  return sentence.sourceLanguage || 'hi';
+}
+
+function applyLanguageProfile(code) {
+  const profile = getLanguageProfile(code);
+  state.sourceLanguage = profile.code;
+  try { localStorage.setItem('csbSourceLanguage', profile.code); } catch (_) {}
+  document.documentElement.dataset.sourceLanguage = profile.code;
+  $('promptInputLabel').textContent = profile.inputHelp;
+  $('promptSentence').placeholder = profile.inputPlaceholder;
+  $('generatedPrompt').value = '';
+  $('generatedPromptPanel').classList.add('hidden');
+  $('promptMessage').textContent = '';
 }
 
 function setModelAudioStatus(button, message) {
@@ -440,22 +482,26 @@ function submitDeleteSentence() {
 }
 
 function createCard(sentence, preview = false) {
+  const profile = getLanguageProfile(sourceLanguageFor(sentence));
   const node = $('cardTemplate').content.firstElementChild.cloneNode(true);
   node.querySelector('.category-pill').textContent = sentence.category || 'Other';
   node.querySelector('.record-id').textContent = preview ? 'PREVIEW' : sentence.recordId || '';
   const deleteButton = node.querySelector('.card-delete-button');
   deleteButton.hidden = preview;
   if (!preview) deleteButton.addEventListener('click', () => openDeleteDialog(sentence));
-  node.querySelector('.hindi').textContent = sentence.hindiSentence;
+  const sourceSentence = sourceSentenceFor(sentence);
+  node.querySelector('.hindi').textContent = sourceSentence;
   const hindiSpeak = node.querySelector('.hindi-speak-button');
-  hindiSpeak.addEventListener('click', () => speakHindi(sentence.hindiSentence, hindiSpeak));
+  hindiSpeak.title = `Play ${profile.name} pronunciation`;
+  hindiSpeak.addEventListener('click', () => speakSourceLanguage(sourceSentence, profile.locale, hindiSpeak));
   const roman = romanHindiFor(sentence);
   const romanLine = node.querySelector('.roman-hindi');
-  romanLine.textContent = roman ? `Roman Hindi: ${roman}` : '';
+  romanLine.textContent = roman ? `${profile.romanizationName}: ${roman}` : '';
   romanLine.hidden = !roman;
   node.querySelector('.chinese').textContent = sentence.chineseSentence;
   node.querySelector('.pinyin').textContent = sentence.pinyin;
-  node.querySelector('.explanation').textContent = sentence.hindiExplanation || 'No explanation added.';
+  node.querySelector('.explanation-label').textContent = `${profile.name} explanation`;
+  node.querySelector('.explanation').textContent = sourceExplanationFor(sentence) || 'No explanation added.';
   const tags = String(sentence.tags || '').split(',').map(t => t.trim()).filter(Boolean);
   node.querySelector('.tags').innerHTML = tags.map(tag => `<span class="tag"></span>`).join('');
   node.querySelectorAll('.tag').forEach((el, i) => { el.textContent = tags[i]; });
@@ -488,13 +534,19 @@ function speakChinese(text, button) {
 }
 
 function speakHindi(text, button) {
+  return speakSourceLanguage(text, 'hi-IN', button);
+}
+
+function speakSourceLanguage(text, locale, button) {
   if (!('speechSynthesis' in window)) return alert('Speech is not supported in this browser. Please try Chrome, Edge or Safari.');
   speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'hi-IN';
+  utterance.lang = locale;
   utterance.rate = 0.85;
   const voices = speechSynthesis.getVoices();
-  utterance.voice = voices.find(v => v.lang.toLowerCase() === 'hi-in') || voices.find(v => v.lang.toLowerCase().startsWith('hi')) || null;
+  const normalizedLocale = locale.toLowerCase();
+  const languageCode = normalizedLocale.split('-')[0];
+  utterance.voice = voices.find(v => v.lang.toLowerCase() === normalizedLocale) || voices.find(v => v.lang.toLowerCase().startsWith(languageCode)) || null;
   utterance.onstart = () => button.classList.add('speaking');
   utterance.onend = utterance.onerror = () => button.classList.remove('speaking');
   speechSynthesis.speak(utterance);
@@ -771,7 +823,7 @@ function updateTopicPicker() {
 
 function renderSentences() {
   const visible = state.sentences.filter(s => {
-    const haystack = normalizeSearchText([s.recordId,s.hindiSentence,romanHindiFor(s),s.chineseSentence,s.pinyin,s.hindiExplanation,s.category,s.tags].join(' '));
+    const haystack = normalizeSearchText([s.recordId,sourceSentenceFor(s),romanHindiFor(s),s.chineseSentence,s.pinyin,sourceExplanationFor(s),s.category,s.tags].join(' '));
     const topicMatch = state.selectedCategories.size === 0 || [...sentenceTopics(s)].some(topic => state.selectedCategories.has(topic));
     return matchesKeywordExpression(haystack) && topicMatch;
   });
@@ -787,7 +839,10 @@ function handlePreview() {
   if (!text) { $('parseMessage').textContent = 'Paste an AI answer first.'; return; }
   if (text !== pastedText) $('pasteInput').value = text;
   const parsed = parsePaste(text);
-  const missing = [['Hindi',parsed.hindiSentence],['Chinese',parsed.chineseSentence],['Pinyin',parsed.pinyin],['Roman',parsed.romanHindi],['Explanation',parsed.hindiExplanation]].filter(([,v]) => !v).map(([k]) => k);
+  const profile = getLanguageProfile(parsed.sourceLanguage);
+  const required = [['Source', parsed.sourceSentence], ['Chinese', parsed.chineseSentence], ['Pinyin', parsed.pinyin], ['Explanation', parsed.explanation]];
+  if (profile.requiresRomanization) required.splice(3, 0, ['Romanization', parsed.romanization]);
+  const missing = required.filter(([,value]) => !value).map(([label]) => label);
   if (missing.length) { $('parseMessage').textContent = `Please add these labelled parts: ${missing.join(', ')}.`; return; }
   state.preview = parsed; $('parseMessage').textContent = '';
   const mount = $('previewCard'); mount.innerHTML = ''; mount.appendChild(createCard(parsed, true));
@@ -814,6 +869,11 @@ function showApiError(message) {
 
 function openPinDialog() {
   if (!state.preview) return;
+  if (state.preview.sourceLanguage !== 'hi') {
+    $('parseMessage').textContent = 'Preview is ready. Saving this language will be enabled after the V3 teacher database is connected; the existing V2 Google Sheet remains Hindi-only.';
+    $('previewPanel').scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
   try { $('pinInput').value = localStorage.getItem('csbSubmissionPin') || ''; } catch (_) {}
   $('saveMessage').textContent = '';
   $('pinDialog').showModal();
@@ -886,6 +946,7 @@ $('refreshButton').addEventListener('click', () => {
   window.location.reload();
 });
 $('generatePrompt').addEventListener('click', buildPrompt);
+$('sourceLanguage').addEventListener('change', event => applyLanguageProfile(event.target.value));
 $('clearPrompt').addEventListener('click', () => {
   $('promptSentence').value = '';
   $('generatedPrompt').value = '';
@@ -940,7 +1001,8 @@ document.addEventListener('keydown', event => {
 });
 $('helpButton').addEventListener('click', () => $('helpDialog').showModal());
 $('copyPrompt').addEventListener('click', async () => {
-  await navigator.clipboard.writeText(AI_PROMPT_TEMPLATE.replace('{{STUDENT_SENTENCE}}', '[Paste one Hindi or Romanized Hindi sentence here]'));
+  const profile = getLanguageProfile(state.sourceLanguage);
+  await navigator.clipboard.writeText(buildLanguagePrompt(profile, `[Paste one ${profile.name} or Chinese sentence here]`));
   const button = $('copyPrompt'); button.textContent = 'Copied!';
   setTimeout(() => { button.textContent = 'Copy AI prompt'; }, 1400);
 });
@@ -956,5 +1018,9 @@ $('closeAudioPin').addEventListener('click', () => { pendingModelSave = null; $(
 $('confirmDelete').addEventListener('click', submitDeleteSentence);
 $('deletePinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitDeleteSentence(); });
 $('closeDelete').addEventListener('click', () => { pendingDeleteSentence = null; $('deleteDialog').close(); });
+let savedSourceLanguage = 'hi';
+try { savedSourceLanguage = localStorage.getItem('csbSourceLanguage') || 'hi'; } catch (_) {}
+$('sourceLanguage').value = LANGUAGE_PROFILES[savedSourceLanguage] ? savedSourceLanguage : 'hi';
+applyLanguageProfile($('sourceLanguage').value);
 initPronunciationLab();
 loadBank();

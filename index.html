@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#ef493a">
-  <meta name="description" content="Build your personal Chinese sentence bank with Hindi explanations, pinyin, categories and Taiwanese Mandarin audio.">
+  <meta name="description" content="Build a multilingual Chinese sentence bank with pinyin, explanations and Taiwanese Mandarin audio.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Sentence Bank">
@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.webmanifest?v=20260911-10">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Khmer:wght@400;500;600&family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260918-1">
 </head>
 <body>
@@ -24,10 +24,19 @@
       <span><strong id="bankName">My Chinese Sentence Bank</strong><small id="ownerName">A personal language notebook</small></span>
     </a>
     <div class="topbar-actions">
+      <div class="teacher-auth">
+        <div class="teacher-account" id="teacherAccount" hidden>
+          <img id="teacherAccountPhoto" alt="">
+          <span><strong id="teacherAccountName"></strong><small id="teacherAccountEmail"></small></span>
+        </div>
+        <button class="google-sign-in-button" id="googleSignInButton" type="button">Sign in with Google</button>
+        <button class="teacher-sign-out-button" id="googleSignOutButton" type="button" hidden>Sign out</button>
+      </div>
       <button class="icon-button refresh-button" id="refreshButton" type="button" aria-label="Refresh sentence bank" title="Refresh">↻</button>
       <button class="icon-button" id="helpButton" type="button" aria-label="Show paste format help" title="Help">?</button>
     </div>
   </header>
+  <div class="auth-message" id="authMessage" role="status" aria-live="polite">Checking Google account…</div>
 
   <main id="top">
     <section class="intro">
@@ -36,7 +45,7 @@
       </figure>
       <div class="eyebrow">LEARN ONE USEFUL SENTENCE AT A TIME</div>
       <h1>Your words.<br><em>Your Chinese.</em></h1>
-      <p>Paste a sentence prepared by ChatGPT or Gemini. We will organise the Hindi, Chinese, pinyin and explanation for you.</p>
+      <p>Choose your students' first language, then build a personal bank of Traditional Chinese sentences, pinyin, explanations and model recordings.</p>
       <button class="primary-button" id="startButton" type="button">Create a new sentence <span aria-hidden="true">↓</span></button>
       <div class="intro-stats" aria-label="Sentence bank summary">
         <span><strong id="sentenceCount">—</strong> sentences</span>
@@ -118,10 +127,26 @@
       <div class="section-heading">
         <div><span class="step">01</span><h2 id="promptBuilderTitle">Create your AI prompt</h2></div>
       </div>
-      <p class="section-note">Type one Hindi, Romanized Hindi, or Chinese sentence. The AI will translate in either direction and include Roman Hindi.</p>
+      <p class="section-note" id="promptLanguageNote">Choose your students' first language, then enter one sentence. The AI will translate in either direction.</p>
+      <label class="language-profile-field" for="sourceLanguage">
+        <span class="field-label">Students' first language</span>
+        <select id="sourceLanguage">
+          <option value="hi">हिन्दी · Hindi</option>
+          <option value="ta">தமிழ் · Tamil</option>
+          <option value="th">ไทย · Thai</option>
+          <option value="km">ខ្មែរ · Khmer</option>
+          <option value="vi">Tiếng Việt · Vietnamese</option>
+          <option value="id">Bahasa Indonesia · Indonesian</option>
+          <option value="ne">नेपाली · Nepali</option>
+          <option value="bn">বাংলা · Bengali</option>
+          <option value="es">Español · Spanish</option>
+          <option value="en">English</option>
+        </select>
+        <small id="languageStorageNote">Hindi uses the existing V2 Google Sheet. Other languages are available for prompt and preview testing until the V3 teacher database is connected.</small>
+      </label>
       <div class="prompt-input-row">
         <label class="prompt-sentence-field">
-          <span class="field-label">Hindi, Roman Hindi, or Chinese sentence</span>
+          <span class="field-label" id="promptInputLabel">Hindi, Romanized Hindi, or Chinese sentence</span>
           <textarea id="promptSentence" rows="3" placeholder="क्योंकि तुमने अभी देना नहीं सीखा।&#10;Kyonki tumne abhi dena nahin seekha.&#10;or: 因為你還沒學會給予。"></textarea>
         </label>
         <div class="prompt-generate-actions">
@@ -150,7 +175,7 @@
         <div><span class="step">02</span><h2 id="composerTitle">Paste the AI answer</h2></div>
         <button class="text-button" id="sampleButton" type="button">Use sample</button>
       </div>
-      <p class="section-note">Use the labels HINDI, CHINESE, PINYIN, ROMAN, EXPLANATION and CATEGORY. Long explanations are welcome.</p>
+      <p class="section-note">Use the labels SOURCE, CHINESE, PINYIN, ROMANIZATION, EXPLANATION and CATEGORY. The older HINDI and ROMAN labels remain compatible.</p>
       <label class="paste-box">
         <span class="sr-only">Paste AI-generated sentence content</span>
         <textarea id="pasteInput" rows="2" placeholder="Paste the complete AI answer here…"></textarea>
@@ -186,7 +211,7 @@
           <label class="keyword-field"><span class="keyword-label">B</span><span class="sr-only">Second keyword</span><input id="keywordB" type="search" placeholder="Second keyword"></label>
           <label class="operator-field"><span class="sr-only">Operator between keywords B and C</span><select id="operatorBC"><option value="AND">AND</option><option value="OR">OR</option></select></label>
           <label class="keyword-field"><span class="keyword-label">C</span><span class="sr-only">Third keyword</span><input id="keywordC" type="search" placeholder="Third keyword"></label>
-          <small class="search-help">Searches Hindi, Chinese, pinyin, explanations, topics and tags. Calculated left to right.</small>
+          <small class="search-help">Searches the source language, Chinese, pinyin, explanations, topics and tags. Calculated left to right.</small>
         </div>
         <div class="topic-picker" id="topicPicker">
           <button class="topic-toggle" id="topicToggle" type="button" aria-expanded="false" aria-controls="topicMenu">
@@ -211,11 +236,11 @@
     <button class="dialog-close" id="closeHelp" aria-label="Close help">×</button>
     <span class="step">PASTE GUIDE</span>
     <h2>Use one prompt every time</h2>
-    <p>Copy our standard prompt into ChatGPT or Gemini, replace the Hindi sentence, and send it.</p>
+    <p>Choose the students' first language, copy the generated prompt into ChatGPT or Gemini, replace the example sentence, and send it.</p>
     <button class="primary-button copy-prompt" id="copyPrompt" type="button">Copy AI prompt</button>
     <p class="format-note">The parser also accepts common Markdown labels such as <code>**Chinese:**</code>.</p>
-    <pre>HINDI:
-[Hindi sentence]
+    <pre>SOURCE:
+[Sentence in the students' first language]
 
 CHINESE:
 [Traditional Chinese sentence]
@@ -223,11 +248,11 @@ CHINESE:
 PINYIN:
 [Pinyin with tone marks]
 
-ROMAN:
-[Romanized Hindi in Latin script]
+ROMANIZATION:
+[Latin-script romanization when needed]
 
 EXPLANATION:
-[Hindi explanation; add pinyin after every Chinese word]
+[Explanation in the students' first language; add pinyin after every Chinese word]
 
 CATEGORY:
 [One category]</pre>
@@ -273,7 +298,7 @@ CATEGORY:
   <template id="cardTemplate">
     <article class="sentence-card">
       <div class="card-top"><span class="category-pill"></span><div class="card-admin"><span class="record-id"></span><button class="card-delete-button" type="button" aria-label="Delete sentence" title="Delete sentence">Delete</button></div></div>
-      <div class="hindi-row"><p class="hindi"></p><button class="hindi-speak-button" type="button" aria-label="Play Hindi pronunciation">▶</button></div>
+      <div class="hindi-row"><p class="hindi"></p><button class="hindi-speak-button" type="button" aria-label="Play source-language pronunciation">▶</button></div>
       <p class="roman-hindi"></p>
       <div class="chinese-row"><h3 class="chinese"></h3><button class="speak-button" type="button" aria-label="Play Taiwanese Mandarin pronunciation">▶</button></div>
       <p class="pinyin"></p>
@@ -283,11 +308,13 @@ CATEGORY:
         <button class="card-save-model-button" type="button" disabled>Save as model</button>
         <span class="card-recording-status" role="status" aria-live="polite"></span>
       </div>
-      <details><summary>Hindi explanation <span>＋</span></summary><div class="explanation"></div></details>
+      <details><summary><span class="explanation-label">Source-language explanation</span> <span>＋</span></summary><div class="explanation"></div></details>
       <div class="tags"></div>
     </article>
   </template>
 
-  <script src="app.js?v=20260918-2"></script>
+  <script src="language-config.js?v=20260918-1"></script>
+  <script src="app.js?v=20260918-v3-1"></script>
+  <script type="module" src="firebase-auth.js?v=20260918-1"></script>
 </body>
 </html>
