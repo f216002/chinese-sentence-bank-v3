@@ -33,7 +33,6 @@
         <button class="teacher-sign-out-button" id="googleSignOutButton" type="button" hidden>Sign out</button>
       </div>
       <button class="icon-button refresh-button" id="refreshButton" type="button" aria-label="Refresh sentence bank" title="Refresh">↻</button>
-      <button class="icon-button" id="helpButton" type="button" aria-label="Show paste format help" title="Help">?</button>
     </div>
   </header>
   <div class="auth-message" id="authMessage" role="status" aria-live="polite">Checking Google account…</div>
@@ -233,31 +232,6 @@
     </section>
   </main>
 
-  <dialog id="helpDialog">
-    <button class="dialog-close" id="closeHelp" aria-label="Close help">×</button>
-    <span class="step">PASTE GUIDE</span>
-    <h2>Use one prompt every time</h2>
-    <p>Choose the students' first language, copy the generated prompt into ChatGPT or Gemini, replace the example sentence, and send it.</p>
-    <button class="primary-button copy-prompt" id="copyPrompt" type="button">Copy AI prompt</button>
-    <p class="format-note">The parser also accepts common Markdown labels such as <code>**Chinese:**</code>.</p>
-    <pre>SOURCE:
-[Sentence in the students' first language]
-
-CHINESE:
-[Traditional Chinese sentence]
-
-PINYIN:
-[Pinyin with tone marks]
-
-ROMANIZATION:
-[Latin-script romanization when needed]
-
-EXPLANATION:
-[Explanation in the students' first language; add pinyin after every Chinese word]
-
-CATEGORY:
-[One category]</pre>
-  </dialog>
 
   <dialog id="audioPinDialog">
     <button class="dialog-close" id="closeAudioPin" aria-label="Close teacher recording window">×</button>
@@ -303,7 +277,7 @@ CATEGORY:
   </template>
 
   <script src="language-config.js?v=20260918-1"></script>
-  <script src="app.js?v=20260918-v3-6"></script>
+  <script src="app.js?v=20260918-v3-7"></script>
   <script type="module" src="firebase-auth.js?v=20260918-3"></script>
   <script type="module" src="firebase-store.js?v=20260918-2"></script>
 </body>
