@@ -50,6 +50,7 @@ let activeCardStream = null;
 let activeCardButton = null;
 let pendingModelSave = null;
 let pendingDeleteSentence = null;
+let v3DatabaseReady = false;
 
 function parsePaste(text) {
   const labels = ['SOURCE', 'HINDI', 'TAMIL', 'THAI', 'KHMER', 'VIETNAMESE', 'INDONESIAN', 'NEPALI', 'BENGALI', 'BANGLA', 'SPANISH', 'ENGLISH', 'CHINESE', 'PINYIN', 'ROMANIZATION', 'ROMAN', 'EXPLANATION', 'CATEGORY', 'TAGS', 'AI SOURCE'];
@@ -317,7 +318,8 @@ async function toggleCardRecording(node, sentence, preview) {
       const recording = {blob, url:URL.createObjectURL(blob), mimeType:blob.type || 'audio/webm'};
       cardRecordings.set(key, recording);
       playButton.disabled = false;
-      saveButton.disabled = preview || !sentence.recordId;
+      // Personal model recordings will be enabled in the Firebase Storage phase.
+      saveButton.disabled = true;
       recordButton.classList.remove('recording');
       recordButton.textContent = '● Record again';
       status.textContent = preview ? 'Recording ready. Save the sentence before saving a model voice.' : 'Recording ready. Listen and compare.';
@@ -422,63 +424,27 @@ function openDeleteDialog(sentence) {
   pendingDeleteSentence = sentence;
   $('deleteSentenceText').textContent = sentence.chineseSentence || sentence.hindiSentence || 'Untitled sentence';
   $('deleteRecordId').textContent = sentence.recordId;
-  try { $('deletePinInput').value = localStorage.getItem('csbSubmissionPin') || ''; } catch (_) {}
   $('deleteMessage').textContent = '';
   $('confirmDelete').disabled = false;
   $('deleteDialog').showModal();
-  setTimeout(() => $('deletePinInput').focus(), 50);
 }
 
-function submitDeleteSentence() {
-  const pin = $('deletePinInput').value.trim();
-  if (!pin) { $('deleteMessage').textContent = 'Enter the teacher PIN.'; return; }
+async function submitDeleteSentence() {
   if (!pendingDeleteSentence) { $('deleteDialog').close(); return; }
-
   const sentence = pendingDeleteSentence;
   const button = $('confirmDelete');
-  const requestId = `delete-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
   button.disabled = true;
   $('deleteMessage').textContent = 'Deleting sentence…';
-  try { localStorage.setItem('csbSubmissionPin', pin); } catch (_) {}
-
-  const form = document.createElement('form');
-  form.method = 'POST'; form.action = API_URL; form.target = 'submissionFrame'; form.hidden = true;
-  const fields = {action:'delete', requestId, pin, recordId:sentence.recordId};
-  Object.entries(fields).forEach(([name,value]) => {
-    const field = document.createElement('input');
-    field.name = name; field.value = value; form.appendChild(field);
-  });
-  document.body.appendChild(form); form.submit(); form.remove();
-
-  let checks = 0;
-  const verify = setInterval(() => {
-    checks += 1;
-    const callback = `verifyDeleteStatus${Date.now()}`;
-    const script = document.createElement('script');
-    window[callback] = data => {
-      delete window[callback]; script.remove();
-      if (data && data.success && data.deletedRecordId === sentence.recordId) {
-        clearInterval(verify);
-        state.sentences = state.sentences.filter(row => row.recordId !== sentence.recordId);
-        $('sentenceCount').textContent = state.sentences.length;
-        renderSentences();
-        pendingDeleteSentence = null;
-        $('deleteMessage').textContent = 'Sentence deleted.';
-        setTimeout(() => $('deleteDialog').close(), 650);
-      } else if (data && data.success === false) {
-        clearInterval(verify);
-        button.disabled = false;
-        $('deleteMessage').textContent = `Delete failed: ${data.error || 'Unknown backend error.'}`;
-      } else if (checks >= 20) {
-        clearInterval(verify);
-        button.disabled = false;
-        $('deleteMessage').textContent = 'No confirmation was received. Refresh before trying again.';
-      }
-    };
-    script.onerror = () => { delete window[callback]; script.remove(); };
-    script.src = `${API_URL}?action=uploadStatus&requestId=${encodeURIComponent(requestId)}&callback=${callback}&_=${Date.now()}`;
-    document.body.appendChild(script);
-  }, 1200);
+  try {
+    if (!window.MCSB_DB) throw new Error('The V3 database is not ready. Refresh and try again.');
+    await window.MCSB_DB.deleteSentence(sentence.recordId);
+    pendingDeleteSentence = null;
+    $('deleteMessage').textContent = 'Sentence deleted.';
+    setTimeout(() => $('deleteDialog').close(), 650);
+  } catch (error) {
+    button.disabled = false;
+    $('deleteMessage').textContent = `Delete failed: ${error.message || 'Unknown error.'}`;
+  }
 }
 
 function createCard(sentence, preview = false) {
@@ -847,96 +813,36 @@ function handlePreview() {
   state.preview = parsed; $('parseMessage').textContent = '';
   const mount = $('previewCard'); mount.innerHTML = ''; mount.appendChild(createCard(parsed, true));
   $('previewPanel').classList.remove('hidden'); $('previewPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  updateV3SaveControls();
 }
 
-function receiveBank(data) {
-  window.__sentenceBankLoaded = true;
-  if (!data || !data.success) return showApiError('The API returned an error.');
-  state.settings = data.settings || {}; state.sentences = data.sentences || [];
-  state.categories = String(state.settings.categories || '').split(',').map(s => s.trim()).filter(Boolean);
-  $('bankName').textContent = state.settings.bankName || 'My Chinese Sentence Bank';
-  $('ownerName').textContent = state.settings.ownerName && state.settings.ownerName !== 'Your Name' ? `Made for ${state.settings.ownerName}` : 'A personal language notebook';
-  document.title = state.settings.bankName || 'My Chinese Sentence Bank';
-  $('sentenceCount').textContent = state.sentences.length; $('categoryCount').textContent = state.categories.length;
-  $('apiStatus').className = 'live-status ready'; $('apiStatus').innerHTML = '<i></i> Google Sheet connected';
-  renderFilters(); renderSentences();
+function updateV3SaveControls() {
+  const user = window.MCSB_AUTH && window.MCSB_AUTH.user;
+  const ready = Boolean(v3DatabaseReady && window.MCSB_DB);
+  const button = $('saveButton');
+  button.disabled = !(state.preview && user && ready);
+  if (!user) button.textContent = 'Sign in to save';
+  else if (!ready) button.textContent = 'Connecting database…';
+  else button.textContent = 'Save to my personal bank';
 }
 
-function showApiError(message) {
-  $('apiStatus').className = 'live-status error'; $('apiStatus').innerHTML = '<i></i> Connection problem';
-  $('sentenceGrid').innerHTML = `<div class="loading-card">${message} Refresh the page to try again.</div>`;
-}
-
-function openPinDialog() {
+async function savePreviewToV3() {
   if (!state.preview) return;
-  if (state.preview.sourceLanguage !== 'hi') {
-    $('parseMessage').textContent = 'Preview is ready. Saving this language will be enabled after the V3 teacher database is connected; the existing V2 Google Sheet remains Hindi-only.';
-    $('previewPanel').scrollIntoView({behavior:'smooth', block:'start'});
-    return;
+  const button = $('saveButton');
+  button.disabled = true;
+  $('v3SaveMessage').textContent = 'Saving to your personal bank…';
+  try {
+    await window.MCSB_DB.saveSentence(state.preview);
+    state.preview = null;
+    $('pasteInput').value = '';
+    $('previewPanel').classList.add('hidden');
+    $('v3SaveMessage').textContent = '';
+    $('libraryTitle').scrollIntoView({behavior:'smooth'});
+  } catch (error) {
+    $('v3SaveMessage').textContent = `Save failed: ${error.message || 'Unknown error.'}`;
+  } finally {
+    updateV3SaveControls();
   }
-  try { $('pinInput').value = localStorage.getItem('csbSubmissionPin') || ''; } catch (_) {}
-  $('saveMessage').textContent = '';
-  $('pinDialog').showModal();
-  setTimeout(() => $('pinInput').focus(), 50);
-}
-
-function submitSentence() {
-  const pin = $('pinInput').value.trim();
-  if (!pin) { $('saveMessage').textContent = 'Enter the submission PIN.'; return; }
-  if (!state.preview) { $('pinDialog').close(); return; }
-  if ($('rememberPin').checked) { try { localStorage.setItem('csbSubmissionPin', pin); } catch (_) {} }
-  else { try { localStorage.removeItem('csbSubmissionPin'); } catch (_) {} }
-
-  $('confirmSave').disabled = true;
-  $('saveMessage').textContent = 'Saving sentence…';
-  const submitted = { ...state.preview };
-  const beforeIds = new Set(state.sentences.map(s => s.recordId));
-  const fields = { action:'create', pin, content:submitted.originalPaste, aiSource:submitted.aiSource };
-  const form = document.createElement('form');
-  form.method = 'POST'; form.action = API_URL; form.target = 'submissionFrame'; form.hidden = true;
-  Object.entries(fields).forEach(([name,value]) => {
-    const field = name === 'content' ? document.createElement('textarea') : document.createElement('input');
-    field.name = name; field.value = value; form.appendChild(field);
-  });
-  document.body.appendChild(form); form.submit(); form.remove();
-
-  let checks = 0;
-  const verify = setInterval(() => {
-    checks += 1;
-    const callback = `verifySave${Date.now()}`;
-    window[callback] = data => {
-      delete window[callback]; script.remove();
-      const rows = data && data.success ? data.sentences || [] : [];
-      const added = rows.find(row =>
-        row.recordId &&
-        !beforeIds.has(row.recordId) &&
-        row.hindiSentence === submitted.hindiSentence &&
-        row.chineseSentence === submitted.chineseSentence &&
-        row.pinyin === submitted.pinyin
-      );
-      if (added) {
-        clearInterval(verify); state.sentences = rows;
-        $('sentenceCount').textContent = rows.length; renderSentences();
-        $('saveMessage').textContent = 'Saved successfully!'; $('confirmSave').disabled = false;
-        $('pasteInput').value = ''; $('previewPanel').classList.add('hidden');
-        setTimeout(() => { $('pinDialog').close(); $('libraryTitle').scrollIntoView({behavior:'smooth'}); }, 800);
-      } else if (checks >= 10) {
-        clearInterval(verify); $('confirmSave').disabled = false;
-        $('saveMessage').textContent = 'The submission was sent, but confirmation is taking longer than expected. Refresh the page before trying again.';
-      }
-    };
-    const script = document.createElement('script');
-    script.src = `${API_URL}?action=list&callback=${callback}&_=${Date.now()}`;
-    document.body.appendChild(script);
-  }, 1800);
-}
-
-function loadBank() {
-  window.sentenceBankCallback = receiveBank;
-  const script = document.createElement('script');
-  script.src = `${API_URL}?action=list&callback=sentenceBankCallback&_=${Date.now()}`;
-  script.onerror = () => showApiError('Could not reach Google Sheets.'); document.body.appendChild(script);
-  setTimeout(() => { if (!window.__sentenceBankLoaded) showApiError('Google Sheets took too long to respond.'); }, 12000);
 }
 
 function showEmptyV3Bank(user = null) {
@@ -965,6 +871,36 @@ function showEmptyV3Bank(user = null) {
 function handleV3AuthChange(event) {
   const authState = event.detail || window.MCSB_AUTH || {};
   showEmptyV3Bank(authState.user || null);
+  updateV3SaveControls();
+}
+
+function receiveV3Bank(event) {
+  const detail = event.detail || {};
+  const user = detail.user || null;
+  const sentences = Array.isArray(detail.sentences) ? detail.sentences : [];
+  if (!user) {
+    showEmptyV3Bank(null);
+    return;
+  }
+  state.sentences = sentences;
+  state.categories = [...new Set(sentences.map(row => String(row.category || '').trim()).filter(Boolean))].sort();
+  state.selectedCategories = new Set(state.categories.map(normalizeSearchText));
+  state.settings = { defaultVoice: 'zh-TW', speechRate: 0.85 };
+  $('ownerName').textContent = `Teacher workspace · ${user.displayName || user.email || 'Signed in'}`;
+  $('sentenceCount').textContent = String(sentences.length);
+  $('categoryCount').textContent = String(state.categories.length);
+  $('apiStatus').className = 'live-status ready';
+  $('apiStatus').innerHTML = '<i></i> Firestore connected';
+  renderFilters();
+  renderSentences();
+  updateV3SaveControls();
+}
+
+function showV3BankError(event) {
+  const message = (event.detail && event.detail.message) || 'Could not open your personal bank.';
+  $('apiStatus').className = 'live-status error';
+  $('apiStatus').innerHTML = '<i></i> Firestore connection problem';
+  $('sentenceGrid').innerHTML = `<div class="loading-card">${message}</div>`;
 }
 
 $('startButton').addEventListener('click', () => $('createPrompt').scrollIntoView({behavior:'smooth'}));
@@ -1036,15 +972,11 @@ $('copyPrompt').addEventListener('click', async () => {
 });
 $('closeHelp').addEventListener('click', () => $('helpDialog').close());
 $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
-$('saveButton').addEventListener('click', openPinDialog);
-$('confirmSave').addEventListener('click', submitSentence);
-$('pinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitSentence(); });
-$('closePin').addEventListener('click', () => $('pinDialog').close());
+$('saveButton').addEventListener('click', savePreviewToV3);
 $('confirmAudioSave').addEventListener('click', submitTeacherAudio);
 $('audioPinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitTeacherAudio(); });
 $('closeAudioPin').addEventListener('click', () => { pendingModelSave = null; $('audioPinDialog').close(); });
 $('confirmDelete').addEventListener('click', submitDeleteSentence);
-$('deletePinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitDeleteSentence(); });
 $('closeDelete').addEventListener('click', () => { pendingDeleteSentence = null; $('deleteDialog').close(); });
 let savedSourceLanguage = 'hi';
 try { savedSourceLanguage = localStorage.getItem('csbSourceLanguage') || 'hi'; } catch (_) {}
@@ -1056,3 +988,9 @@ initPronunciationLab();
 // below that teacher's Firebase UID.
 showEmptyV3Bank(window.MCSB_AUTH?.user || null);
 window.addEventListener('mcsb-auth-changed', handleV3AuthChange);
+window.addEventListener('mcsb-db-ready', () => {
+  v3DatabaseReady = true;
+  updateV3SaveControls();
+});
+window.addEventListener('mcsb-bank-changed', receiveV3Bank);
+window.addEventListener('mcsb-bank-error', showV3BankError);
