@@ -263,8 +263,8 @@ CATEGORY:
     <button class="dialog-close" id="closeAudioPin" aria-label="Close teacher recording window">×</button>
     <span class="step">TEACHER AUDIO</span>
     <h2>Save as the model voice</h2>
-    <p>Only the teacher should save a recording for all students. Enter the private submission PIN.</p>
-    <label class="pin-field">Teacher PIN<input id="audioPinInput" type="password" inputmode="numeric" autocomplete="off" placeholder="Enter PIN"></label>
+    <p>This recording will become the model voice for this sentence in your personal teacher bank. It will replace the previous model recording.</p>
+    <p class="format-note">Recordings are limited to 15 seconds during the free pilot.</p>
     <button class="primary-button full-button" id="confirmAudioSave" type="button">Save teacher recording</button>
     <div class="parse-message" id="audioSaveMessage" role="status" aria-live="polite"></div>
   </dialog>
@@ -303,8 +303,8 @@ CATEGORY:
   </template>
 
   <script src="language-config.js?v=20260918-1"></script>
-  <script src="app.js?v=20260918-v3-5"></script>
+  <script src="app.js?v=20260918-v3-6"></script>
   <script type="module" src="firebase-auth.js?v=20260918-1"></script>
-  <script type="module" src="firebase-store.js?v=20260918-1"></script>
+  <script type="module" src="firebase-store.js?v=20260918-2"></script>
 </body>
 </html>

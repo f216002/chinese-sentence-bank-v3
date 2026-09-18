@@ -207,7 +207,7 @@ function playTeacherAudioUrl(audioUrl, button) {
 }
 
 function playSentenceModel(sentence, button) {
-  if (!sentence.standardAudioUrl) {
+  if (!sentence.hasModelAudio) {
     speakChinese(sentence.chineseSentence, button);
     return;
   }
@@ -220,20 +220,9 @@ function playSentenceModel(sentence, button) {
 
   button.disabled = true;
   setModelAudioStatus(button, 'Loading the teacher recording…');
-  const callback = `receiveTeacherAudio${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
-  const script = document.createElement('script');
-  const cleanup = () => {
-    delete window[callback];
-    script.remove();
+  window.MCSB_DB.loadModelAudio(sentence.recordId).then(data => {
     button.disabled = false;
-  };
-
-  window[callback] = data => {
-    cleanup();
-    if (!data || !data.success || !data.audioBase64) {
-      setModelAudioStatus(button, `Teacher recording unavailable: ${(data && data.message) || 'unknown error'}`);
-      return;
-    }
+    if (!data || !data.audioBase64) throw new Error('The saved recording was not found.');
     try {
       const binary = atob(data.audioBase64);
       const bytes = new Uint8Array(binary.length);
@@ -244,13 +233,10 @@ function playSentenceModel(sentence, button) {
     } catch (_) {
       setModelAudioStatus(button, 'The teacher recording was received but could not be decoded.');
     }
-  };
-  script.onerror = () => {
-    cleanup();
-    setModelAudioStatus(button, 'Could not load the teacher recording. Please check the newest Apps Script deployment.');
-  };
-  script.src = `${API_URL}?action=audio&recordId=${encodeURIComponent(sentence.recordId)}&callback=${callback}&_=${Date.now()}`;
-  document.body.appendChild(script);
+  }).catch(error => {
+    button.disabled = false;
+    setModelAudioStatus(button, `Teacher recording unavailable: ${error.message || 'unknown error'}`);
+  });
 }
 
 async function getNaturalVoiceStream() {
@@ -278,7 +264,7 @@ async function getNaturalVoiceStream() {
 
 function createVoiceRecorder(stream) {
   try {
-    return new MediaRecorder(stream, {audioBitsPerSecond:128000});
+    return new MediaRecorder(stream, {audioBitsPerSecond:48000});
   } catch (_) {
     return new MediaRecorder(stream);
   }
@@ -321,8 +307,7 @@ async function toggleCardRecording(node, sentence, preview) {
       const recording = {blob, url:URL.createObjectURL(blob), mimeType:blob.type || 'audio/webm'};
       cardRecordings.set(key, recording);
       playButton.disabled = false;
-      // Personal model recordings will be enabled in the Firebase Storage phase.
-      saveButton.disabled = true;
+      saveButton.disabled = preview || !sentence.recordId;
       recordButton.classList.remove('recording');
       recordButton.textContent = '● Record again';
       status.textContent = preview ? 'Recording ready. Save the sentence before saving a model voice.' : 'Recording ready. Listen and compare.';
@@ -336,7 +321,7 @@ async function toggleCardRecording(node, sentence, preview) {
     status.textContent = 'Recording… Automatic volume control is off. Keep a steady distance from the microphone.';
     setTimeout(() => {
       if (activeCardRecorder === recorder && recorder.state === 'recording') recorder.stop();
-    }, 30000);
+    }, 15000);
   } catch (_) {
     status.textContent = 'Microphone permission was not allowed.';
   }
@@ -350,10 +335,8 @@ function openAudioPinDialog(sentence, node) {
   const recording = recordingForSentence(sentence);
   if (!recording || !sentence.recordId) return;
   pendingModelSave = {sentence, node, recording};
-  try { $('audioPinInput').value = localStorage.getItem('csbSubmissionPin') || ''; } catch (_) {}
   $('audioSaveMessage').textContent = '';
   $('audioPinDialog').showModal();
-  setTimeout(() => $('audioPinInput').focus(), 50);
 }
 
 function blobToBase64(blob) {
@@ -366,59 +349,26 @@ function blobToBase64(blob) {
 }
 
 async function submitTeacherAudio() {
-  const pin = $('audioPinInput').value.trim();
-  if (!pin) { $('audioSaveMessage').textContent = 'Enter the teacher PIN.'; return; }
   if (!pendingModelSave) { $('audioPinDialog').close(); return; }
   const {sentence, recording} = pendingModelSave;
   const button = $('confirmAudioSave');
   button.disabled = true;
-  $('audioSaveMessage').textContent = 'Uploading the teacher recording…';
+  $('audioSaveMessage').textContent = 'Saving the teacher recording…';
 
   try {
     const audioData = await blobToBase64(recording.blob);
-    const requestId = `audio-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
-    const form = document.createElement('form');
-    form.method = 'POST'; form.action = API_URL; form.target = 'submissionFrame'; form.hidden = true;
-    const fields = {action:'saveAudio', requestId, pin, recordId:sentence.recordId, mimeType:recording.mimeType, audioData};
-    Object.entries(fields).forEach(([name,value]) => {
-      const field = name === 'audioData' ? document.createElement('textarea') : document.createElement('input');
-      field.name = name; field.value = value; form.appendChild(field);
-    });
-    document.body.appendChild(form); form.submit(); form.remove();
-    try { localStorage.setItem('csbSubmissionPin', pin); } catch (_) {}
-
-    let checks = 0;
-    const verify = setInterval(() => {
-      checks += 1;
-      const callback = `verifyAudioStatus${Date.now()}`;
-      const script = document.createElement('script');
-      window[callback] = data => {
-        delete window[callback]; script.remove();
-        if (data && data.success && data.standardAudioUrl) {
-          clearInterval(verify);
-          const saved = state.sentences.find(row => row.recordId === sentence.recordId);
-          if (saved) saved.standardAudioUrl = data.standardAudioUrl;
-          renderSentences();
-          $('audioSaveMessage').textContent = 'Teacher recording saved! The model button now uses your voice.';
-          button.disabled = false;
-          setTimeout(() => $('audioPinDialog').close(), 1300);
-        } else if (data && data.success === false) {
-          clearInterval(verify);
-          button.disabled = false;
-          $('audioSaveMessage').textContent = `Save failed: ${data.error || 'Unknown backend error.'}`;
-        } else if (checks >= 20) {
-          clearInterval(verify);
-          button.disabled = false;
-          $('audioSaveMessage').textContent = 'No confirmation was received. Please check that the newest BankApi.gs was deployed.';
-        }
-      };
-      script.onerror = () => { delete window[callback]; script.remove(); };
-      script.src = `${API_URL}?action=uploadStatus&requestId=${encodeURIComponent(requestId)}&callback=${callback}&_=${Date.now()}`;
-      document.body.appendChild(script);
-    }, 1500);
-  } catch (_) {
+    if (!window.MCSB_DB) throw new Error('The V3 database is not ready. Refresh and try again.');
+    await window.MCSB_DB.saveModelAudio(sentence.recordId, audioData, recording.mimeType, recording.blob.size);
+    const cachedUrl = teacherAudioCache.get(sentence.recordId);
+    if (cachedUrl && cachedUrl !== recording.url) URL.revokeObjectURL(cachedUrl);
+    teacherAudioCache.set(sentence.recordId, recording.url);
+    sentence.hasModelAudio = true;
+    $('audioSaveMessage').textContent = 'Teacher recording saved! The yellow Chinese play button now uses your voice.';
     button.disabled = false;
-    $('audioSaveMessage').textContent = 'The recording could not be prepared. Please record again.';
+    setTimeout(() => $('audioPinDialog').close(), 1400);
+  } catch (error) {
+    button.disabled = false;
+    $('audioSaveMessage').textContent = `Save failed: ${error.message || 'Please record again.'}`;
   }
 }
 
@@ -475,7 +425,7 @@ function createCard(sentence, preview = false) {
   node.querySelector('.tags').innerHTML = tags.map(tag => `<span class="tag"></span>`).join('');
   node.querySelectorAll('.tag').forEach((el, i) => { el.textContent = tags[i]; });
   const speak = node.querySelector('.speak-button');
-  speak.title = sentence.standardAudioUrl ? 'Play teacher model voice' : 'Play browser voice';
+  speak.title = sentence.hasModelAudio ? 'Play teacher model voice' : 'Play browser voice';
   speak.addEventListener('click', () => playSentenceModel(sentence, speak));
   const recordButton = node.querySelector('.card-record-button');
   const playButton = node.querySelector('.card-play-button');
@@ -1050,7 +1000,6 @@ $('closeHelp').addEventListener('click', () => $('helpDialog').close());
 $('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
 $('saveButton').addEventListener('click', savePreviewToV3);
 $('confirmAudioSave').addEventListener('click', submitTeacherAudio);
-$('audioPinInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitTeacherAudio(); });
 $('closeAudioPin').addEventListener('click', () => { pendingModelSave = null; $('audioPinDialog').close(); });
 $('confirmDelete').addEventListener('click', submitDeleteSentence);
 $('closeDelete').addEventListener('click', () => { pendingDeleteSentence = null; $('deleteDialog').close(); });

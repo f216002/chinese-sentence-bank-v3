@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getFirestore,
   onSnapshot,
   orderBy,
@@ -22,6 +23,10 @@ function teacherPath(uid) {
 
 function sentenceCollection(uid) {
   return collection(db, 'teachers', uid, 'sentences');
+}
+
+function modelAudioDocument(uid, recordId) {
+  return doc(db, 'teachers', uid, 'modelAudio', recordId);
 }
 
 function publicSentenceData(sentence) {
@@ -58,7 +63,40 @@ async function deleteSentence(recordId) {
   const user = auth.currentUser;
   if (!user) throw new Error('Please sign in with Google first.');
   if (!recordId) throw new Error('The sentence ID is missing.');
-  await deleteDoc(doc(db, 'teachers', user.uid, 'sentences', recordId));
+  await Promise.all([
+    deleteDoc(doc(db, 'teachers', user.uid, 'sentences', recordId)),
+    deleteDoc(modelAudioDocument(user.uid, recordId))
+  ]);
+}
+
+async function saveModelAudio(recordId, audioBase64, mimeType, byteSize) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Please sign in with Google first.');
+  if (!recordId) throw new Error('The sentence ID is missing.');
+  if (!audioBase64) throw new Error('The recording is empty.');
+  if (Number(byteSize) > 650000 || audioBase64.length > 900000) {
+    throw new Error('The recording is too large. Please record a shorter sentence.');
+  }
+  await setDoc(modelAudioDocument(user.uid, recordId), {
+    teacherUid: user.uid,
+    recordId,
+    audioBase64,
+    mimeType: mimeType || 'audio/webm',
+    byteSize: Number(byteSize) || 0,
+    updatedAt: serverTimestamp()
+  });
+  await setDoc(doc(db, 'teachers', user.uid, 'sentences', recordId), {
+    hasModelAudio: true,
+    modelAudioUpdatedAt: serverTimestamp()
+  }, { merge: true });
+}
+
+async function loadModelAudio(recordId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Please sign in with Google first.');
+  if (!recordId) throw new Error('The sentence ID is missing.');
+  const snapshot = await getDoc(modelAudioDocument(user.uid, recordId));
+  return snapshot.exists() ? snapshot.data() : null;
 }
 
 async function openTeacherBank(user) {
@@ -99,7 +137,9 @@ async function openTeacherBank(user) {
 window.MCSB_DB = Object.freeze({
   db,
   saveSentence,
-  deleteSentence
+  deleteSentence,
+  saveModelAudio,
+  loadModelAudio
 });
 dispatch('mcsb-db-ready', { ready: true });
 
@@ -112,4 +152,4 @@ onAuthStateChanged(auth, user => {
   });
 });
 
-export { db, saveSentence, deleteSentence };
+export { db, saveSentence, deleteSentence, saveModelAudio, loadModelAudio };
