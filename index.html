@@ -142,7 +142,7 @@
           <option value="es">Español · Spanish</option>
           <option value="en">English</option>
         </select>
-        <small id="languageStorageNote">Hindi uses the existing V2 Google Sheet. Other languages are available for prompt and preview testing until the V3 teacher database is connected.</small>
+        <small id="languageStorageNote">V3 does not display or save data from the shared V2 Google Sheet. Your personal teacher bank starts empty.</small>
       </label>
       <div class="prompt-input-row">
         <label class="prompt-sentence-field">
@@ -194,8 +194,8 @@
       </div>
       <div id="previewCard"></div>
       <div class="save-row">
-        <p>Your Google Sheet is protected. Enter your private submission PIN when saving.</p>
-        <button class="primary-button" id="saveButton" type="button">Save to my bank</button>
+        <p>Personal saving will be enabled after the V3 Firestore teacher database is connected.</p>
+        <button class="primary-button" id="saveButton" type="button" disabled>V3 saving coming next</button>
       </div>
     </section>
 
@@ -224,10 +224,10 @@
         </div>
       </div>
       <div class="sentence-grid" id="sentenceGrid" aria-live="polite">
-        <div class="loading-card">Loading your sentences…</div>
+        <div class="loading-card">Opening your personal sentence bank…</div>
       </div>
       <div class="empty-state hidden" id="emptyState">
-        <span aria-hidden="true">空</span><h3>No matching sentences</h3><p>Try another keyword or category.</p>
+        <span aria-hidden="true">空</span><h3>Your sentence bank is empty</h3><p>Your first saved V3 sentence will appear here.</p>
       </div>
     </section>
   </main>
@@ -314,7 +314,7 @@ CATEGORY:
   </template>
 
   <script src="language-config.js?v=20260918-1"></script>
-  <script src="app.js?v=20260918-v3-1"></script>
+  <script src="app.js?v=20260918-v3-2"></script>
   <script type="module" src="firebase-auth.js?v=20260918-1"></script>
 </body>
 </html>
