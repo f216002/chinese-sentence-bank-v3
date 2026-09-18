@@ -55,7 +55,10 @@ let v3DatabaseReady = false;
 function parsePaste(text) {
   const labels = ['SOURCE', 'HINDI', 'TAMIL', 'THAI', 'KHMER', 'VIETNAMESE', 'INDONESIAN', 'NEPALI', 'BENGALI', 'BANGLA', 'SPANISH', 'ENGLISH', 'CHINESE', 'PINYIN', 'ROMANIZATION', 'ROMAN', 'EXPLANATION', 'CATEGORY', 'TAGS', 'AI SOURCE'];
   const found = {};
-  const pattern = new RegExp(`(?:^|\\n)\\s*(?:\\*\\*)?\\s*(${labels.join('|')})\\s*:?\\s*(?:\\*\\*)?\\s*:?\\s*`, 'gi');
+  // Use horizontal whitespace only around labels. `\\s` also consumes line
+  // breaks and previously swallowed EXPLANATION when ROMANIZATION was empty.
+  const horizontalSpace = '[^\\S\\r\\n]*';
+  const pattern = new RegExp(`(?:^|\\r?\\n)${horizontalSpace}(?:\\*\\*)?${horizontalSpace}(${labels.join('|')})${horizontalSpace}:?${horizontalSpace}(?:\\*\\*)?${horizontalSpace}:?${horizontalSpace}`, 'gi');
   const matches = [...text.matchAll(pattern)];
   matches.forEach((match, index) => {
     const key = match[1].toUpperCase();
