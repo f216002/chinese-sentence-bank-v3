@@ -4,7 +4,6 @@ import {
   GoogleAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
-  signInWithRedirect,
   signOut
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 import { firebaseConfig } from './firebase-config.js';
@@ -74,16 +73,17 @@ signInButton.addEventListener('click', async () => {
   try {
     await signInWithPopup(auth, provider);
   } catch (error) {
-    const redirectErrors = new Set([
-      'auth/popup-blocked',
-      'auth/operation-not-supported-in-this-environment',
-      'auth/cancelled-popup-request'
-    ]);
-    if (redirectErrors.has(error.code)) {
-      await signInWithRedirect(auth, provider);
-      return;
-    }
-    if (error.code === 'auth/popup-closed-by-user') {
+    // Do not fall back to signInWithRedirect here. On GitHub Pages, some
+    // mobile/privacy-partitioned browsers cannot recover Firebase's redirect
+    // state from the firebaseapp.com helper domain and report
+    // "missing initial state". A popup keeps the app page and auth state open.
+    if (error.code === 'auth/popup-blocked') {
+      setAuthMessage('Google sign-in was blocked. Open this page directly in Safari or Chrome and allow pop-ups, then try again.', true);
+    } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+      setAuthMessage('This in-app browser cannot complete Google sign-in. Open the website directly in Safari or Chrome.', true);
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      setAuthMessage('The sign-in window was interrupted. Please tap Sign in with Google once more.', true);
+    } else if (error.code === 'auth/popup-closed-by-user') {
       setAuthMessage('Google sign-in was closed before completion.');
     } else if (error.code === 'auth/unauthorized-domain') {
       setAuthMessage('This website domain has not yet been authorized in Firebase.', true);
