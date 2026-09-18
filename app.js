@@ -989,15 +989,6 @@ document.addEventListener('keydown', event => {
     $('topicToggle').setAttribute('aria-expanded', 'false');
   }
 });
-$('helpButton').addEventListener('click', () => $('helpDialog').showModal());
-$('copyPrompt').addEventListener('click', async () => {
-  const profile = getLanguageProfile(state.sourceLanguage);
-  await navigator.clipboard.writeText(buildLanguagePrompt(profile, `[Paste one ${profile.name} or Chinese sentence here]`));
-  const button = $('copyPrompt'); button.textContent = 'Copied!';
-  setTimeout(() => { button.textContent = 'Copy AI prompt'; }, 1400);
-});
-$('closeHelp').addEventListener('click', () => $('helpDialog').close());
-$('helpDialog').addEventListener('click', e => { if (e.target === $('helpDialog')) $('helpDialog').close(); });
 $('saveButton').addEventListener('click', savePreviewToV3);
 $('confirmAudioSave').addEventListener('click', submitTeacherAudio);
 $('closeAudioPin').addEventListener('click', () => { pendingModelSave = null; $('audioPinDialog').close(); });
