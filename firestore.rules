@@ -1,0 +1,75 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function verifiedEmail() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email is string;
+    }
+
+    // Bootstrap administrator. This account remains authorized while the
+    // approval system is being introduced, so the owner cannot be locked out.
+    function isAdmin() {
+      return verifiedEmail()
+        && request.auth.token.email == 'f216002@gmail.com';
+    }
+
+    function isApprovedTeacher(teacherId) {
+      return isAdmin()
+        || (
+          verifiedEmail()
+          && request.auth.uid == teacherId
+          && exists(/databases/$(database)/documents/approvedTeachers/$(teacherId))
+          && get(/databases/$(database)/documents/approvedTeachers/$(teacherId)).data.active == true
+        );
+    }
+
+    // A signed-in applicant may create only their own pending request.
+    // Only the administrator may review, approve, reject, or delete requests.
+    match /accessRequests/{teacherId} {
+      allow get: if isAdmin()
+        || (signedIn() && request.auth.uid == teacherId);
+      allow list: if isAdmin();
+      allow create: if verifiedEmail()
+        && request.auth.uid == teacherId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin()
+        || (
+          verifiedEmail()
+          && request.auth.uid == teacherId
+          && resource.data.status == 'pending'
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.email == request.auth.token.email
+          && request.resource.data.status == 'pending'
+        );
+      allow delete: if isAdmin();
+    }
+
+    // Teachers may read their own approval result. Only the administrator can
+    // create approvals, suspend access, restore access, or change roles.
+    match /approvedTeachers/{teacherId} {
+      allow get: if isAdmin()
+        || (signedIn() && request.auth.uid == teacherId);
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    // Every teacher remains isolated by Firebase UID. Authentication alone is
+    // insufficient: the teacher must also have an active approval record.
+    match /teachers/{teacherId} {
+      allow read, create, update, delete:
+        if isApprovedTeacher(teacherId);
+
+      match /{document=**} {
+        allow read, create, update, delete:
+          if isApprovedTeacher(teacherId);
+      }
+    }
+  }
+}
