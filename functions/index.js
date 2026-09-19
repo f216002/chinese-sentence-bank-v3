@@ -26,6 +26,34 @@ const SPEECH_PROFILES = {
     cacheVersion: "th-th-premwadee-rate-85-v1",
     pattern: /[\u0e00-\u0e7f]/u,
   },
+  "vi-VN": {
+    name: "Vietnamese",
+    voice: "vi-VN-HoaiMyNeural",
+    rate: "-15%",
+    cacheVersion: "vi-vn-hoaimy-rate-85-v1",
+    pattern: /[A-Za-zÀ-ỹ]/u,
+  },
+  "ne-NP": {
+    name: "Nepali",
+    voice: "ne-NP-HemkalaNeural",
+    rate: "-15%",
+    cacheVersion: "ne-np-hemkala-rate-85-v1",
+    pattern: /[\u0900-\u097f]/u,
+  },
+  "ta-IN": {
+    name: "Tamil",
+    voice: "ta-IN-PallaviNeural",
+    rate: "-15%",
+    cacheVersion: "ta-in-pallavi-rate-85-v1",
+    pattern: /[\u0b80-\u0bff]/u,
+  },
+  "bn-BD": {
+    name: "Bengali",
+    voice: "bn-BD-NabanitaNeural",
+    rate: "-15%",
+    cacheVersion: "bn-bd-nabanita-rate-85-v1",
+    pattern: /[\u0980-\u09ff]/u,
+  },
 };
 const DAILY_LIMIT = 30;
 const MAX_CHARACTERS = 300;
