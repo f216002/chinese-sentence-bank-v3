@@ -13,7 +13,7 @@ const AZURE_REGION = "eastus";
 const LOCALE = "km-KH";
 const VOICE = "km-KH-SreymomNeural";
 const OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
-const CACHE_VERSION = "km-kh-sreymom-v1";
+const CACHE_VERSION = "km-kh-sreymom-rate-80-v2";
 const DAILY_LIMIT = 30;
 const MAX_CHARACTERS = 300;
 const ADMIN_EMAIL = "f216002@gmail.com";
@@ -100,7 +100,7 @@ exports.synthesizeKhmer = onCall(
     const day = cambodiaDateKey();
     const cacheId = crypto
       .createHash("sha256")
-      .update(`${CACHE_VERSION}|0%|${LOCALE}|${VOICE}|${text}`)
+      .update(`${CACHE_VERSION}|-20%|${LOCALE}|${VOICE}|${text}`)
       .digest("hex");
     const db = getFirestore();
     const cacheRef = db.doc(`sharedAudioCache/${cacheId}`);
@@ -166,7 +166,7 @@ exports.synthesizeKhmer = onCall(
 
     const objectPath = `shared-tts/${LOCALE}/${cacheId}.mp3`;
     try {
-      const ssml = `<speak version="1.0" xml:lang="${LOCALE}"><voice name="${VOICE}"><prosody rate="0%">${escapeXml(text)}</prosody></voice></speak>`;
+      const ssml = `<speak version="1.0" xml:lang="${LOCALE}"><voice name="${VOICE}"><prosody rate="-20%">${escapeXml(text)}</prosody></voice></speak>`;
       const response = await fetch(
         `https://${AZURE_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
         {
