@@ -121,6 +121,9 @@ body[data-access="approved"] .access-gate {
   font-weight: 700;
   text-decoration: none;
 }
+.teacher-admin-button[hidden] {
+  display: none !important;
+}
 .teacher-admin-button:hover {
   background: #e6f7f2;
 }
