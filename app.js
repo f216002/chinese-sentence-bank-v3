@@ -509,8 +509,16 @@ function speakHindi(text, button) {
 
 async function speakSourceLanguage(text, locale, button) {
   const normalizedLocale = String(locale || '').toLowerCase();
-  if (normalizedLocale === 'km-kh' || normalizedLocale === 'th-th') {
-    const languageName = normalizedLocale === 'km-kh' ? 'Khmer' : 'Thai';
+  const cloudVoiceNames = {
+    'km-kh': 'Khmer',
+    'th-th': 'Thai',
+    'vi-vn': 'Vietnamese',
+    'ne-np': 'Nepali',
+    'ta-in': 'Tamil',
+    'bn-bd': 'Bengali'
+  };
+  if (cloudVoiceNames[normalizedLocale]) {
+    const languageName = cloudVoiceNames[normalizedLocale];
     if (window.MCSB_TTS?.playSourceSpeech) {
       await window.MCSB_TTS.playSourceSpeech(text, locale, languageName, button, voiceStatus);
     } else {
