@@ -1,0 +1,11 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Azure-generated audio is private. Only the trusted Cloud Function uses
+    // the Admin SDK to read and write these objects.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
