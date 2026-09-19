@@ -31,9 +31,9 @@ function escapeXml(value) {
     .replaceAll("'", "&apos;");
 }
 
-function indiaDateKey(date = new Date()) {
+function cambodiaDateKey(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
+    timeZone: "Asia/Phnom_Penh",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -96,7 +96,7 @@ exports.synthesizeKhmer = onCall(
     }
 
     const uid = request.auth.uid;
-    const day = indiaDateKey();
+    const day = cambodiaDateKey();
     const cacheId = crypto
       .createHash("sha256")
       .update(`${CACHE_VERSION}|0%|${LOCALE}|${VOICE}|${text}`)
