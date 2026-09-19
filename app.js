@@ -508,12 +508,20 @@ function speakHindi(text, button) {
 }
 
 async function speakSourceLanguage(text, locale, button) {
+  const normalizedLocale = String(locale || '').toLowerCase();
+  if (normalizedLocale === 'km-kh') {
+    if (window.MCSB_TTS?.playKhmer) {
+      await window.MCSB_TTS.playKhmer(text, button, voiceStatus);
+    } else {
+      voiceStatus(button, 'Khmer cloud voice is still loading. Please tap play again.');
+    }
+    return;
+  }
   if (!('speechSynthesis' in window)) {
     voiceStatus(button, 'Speech is not supported in this browser.');
     return;
   }
   const voices = await waitForVoices();
-  const normalizedLocale = String(locale || '').toLowerCase();
   const languageCode = normalizedLocale.split('-')[0];
   const voice = exactVoiceFor(voices, normalizedLocale) ||
     voices.find(item => String(item.lang || '').toLowerCase().split('-')[0] === languageCode) || null;
