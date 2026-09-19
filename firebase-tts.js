@@ -2,7 +2,7 @@ import { getApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-functions.js";
 
 const functions = getFunctions(getApp(), "us-east1");
-const synthesizeKhmer = httpsCallable(functions, "synthesizeKhmer", { timeout: 60000 });
+const synthesizeSourceSpeech = httpsCallable(functions, "synthesizeKhmer", { timeout: 60000 });
 let activeAudio = null;
 
 function friendlyError(error) {
@@ -16,12 +16,12 @@ function friendlyError(error) {
 }
 
 window.MCSB_TTS = {
-  async playKhmer(text, button, setStatus) {
+  async playSourceSpeech(text, locale, languageName, button, setStatus) {
     button.disabled = true;
     button.classList.add("speaking");
-    setStatus(button, "Preparing Khmer cloud voice…");
+    setStatus(button, `Preparing ${languageName} cloud voice…`);
     try {
-      const response = await synthesizeKhmer({ text });
+      const response = await synthesizeSourceSpeech({ text, locale });
       const result = response.data;
       if (activeAudio) {
         activeAudio.pause();
@@ -32,21 +32,21 @@ window.MCSB_TTS = {
         button.classList.remove("speaking");
         button.disabled = false;
         const source = result.cached ? "shared cache" : "new Azure voice";
-        setStatus(button, `Khmer playback finished (${source}). ${result.remainingToday} of ${result.dailyLimit} new voices remain today.`);
+        setStatus(button, `${languageName} playback finished (${source}). ${result.remainingToday} of ${result.dailyLimit} new voices remain today.`);
       };
       activeAudio.onerror = () => {
         button.classList.remove("speaking");
         button.disabled = false;
-        setStatus(button, "Khmer audio could not be played on this device.");
+        setStatus(button, `${languageName} audio could not be played on this device.`);
       };
       await activeAudio.play();
       const source = result.cached ? "shared cache — no quota used" : "new Azure voice";
-      setStatus(button, `Playing Khmer (${source}). ${result.remainingToday} of ${result.dailyLimit} new voices remain today.`);
+      setStatus(button, `Playing ${languageName} (${source}). ${result.remainingToday} of ${result.dailyLimit} new voices remain today.`);
     } catch (error) {
       button.classList.remove("speaking");
       button.disabled = false;
       setStatus(button, friendlyError(error));
-      console.error("Khmer TTS error", error);
+      console.error(`${languageName} TTS error`, error);
     }
   },
 };
