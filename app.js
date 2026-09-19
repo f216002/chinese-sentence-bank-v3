@@ -51,6 +51,7 @@ let activeCardButton = null;
 let pendingModelSave = null;
 let pendingDeleteSentence = null;
 let v3DatabaseReady = false;
+let v3AccessApproved = false;
 
 function parsePaste(text) {
   const labels = ['SOURCE', 'HINDI', 'TAMIL', 'THAI', 'KHMER', 'VIETNAMESE', 'INDONESIAN', 'NEPALI', 'BENGALI', 'BANGLA', 'SPANISH', 'ENGLISH', 'CHINESE', 'PINYIN', 'ROMANIZATION', 'ROMAN', 'EXPLANATION', 'CATEGORY', 'TAGS', 'AI SOURCE'];
@@ -844,7 +845,7 @@ function handlePreview() {
 
 function updateV3SaveControls() {
   const user = window.MCSB_AUTH && window.MCSB_AUTH.user;
-  const ready = Boolean(v3DatabaseReady && window.MCSB_DB);
+  const ready = Boolean(v3DatabaseReady && v3AccessApproved && window.MCSB_DB);
   const button = $('saveButton');
   button.disabled = !(state.preview && user && ready);
   if (!user) button.textContent = 'Sign in to save';
@@ -869,6 +870,42 @@ async function savePreviewToV3() {
   } finally {
     updateV3SaveControls();
   }
+}
+
+function handleTeacherAccess(event) {
+  const detail = event.detail || window.MCSB_ACCESS || {};
+  const status = detail.status || 'checking';
+  const user = detail.user || null;
+  v3AccessApproved = status === 'approved';
+  document.body.dataset.access = status;
+
+  const title = $('accessTitle');
+  const message = $('accessMessage');
+  const email = $('accessEmail');
+  if (email) email.textContent = user?.email || '';
+
+  const copy = {
+    'signed-out': ['Teacher sign-in required', 'Sign in with the Google account registered for your teaching team.'],
+    checking: ['Checking teacher access…', 'Google has verified your identity. The internal teacher list is now being checked.'],
+    pending: ['Teacher approval is pending', 'Your Google account is verified. Your request has been sent to the administrator for internal approval.'],
+    rejected: ['Teacher access was not approved', 'This Google account is not authorized for the teacher workspace. Please contact the administrator.'],
+    suspended: ['Teacher access is suspended', 'Your saved data is retained, but access is currently paused. Please contact the administrator.'],
+    error: ['Access check could not be completed', detail.message || 'Please refresh the page and try again.']
+  };
+  const selected = copy[status] || copy.checking;
+  if (title) title.textContent = selected[0];
+  if (message) message.textContent = selected[1];
+
+  const authMessage = $('authMessage');
+  if (authMessage && status !== 'approved') authMessage.textContent = selected[0];
+  if (status === 'approved' && authMessage) {
+    authMessage.textContent = detail.isAdmin
+      ? 'Administrator account connected.'
+      : 'Approved teacher account connected.';
+  }
+
+  if (!v3AccessApproved) showEmptyV3Bank(user);
+  updateV3SaveControls();
 }
 
 function showEmptyV3Bank(user = null) {
@@ -1004,6 +1041,7 @@ initPronunciationLab();
 // below that teacher's Firebase UID.
 showEmptyV3Bank(window.MCSB_AUTH?.user || null);
 window.addEventListener('mcsb-auth-changed', handleV3AuthChange);
+window.addEventListener('mcsb-access-changed', handleTeacherAccess);
 window.addEventListener('mcsb-db-ready', () => {
   v3DatabaseReady = true;
   updateV3SaveControls();

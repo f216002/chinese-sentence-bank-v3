@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ef493a">
+  <title>Teacher Access Administration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260919-1">
+  <style>
+    .admin-main{max-width:1100px;margin:0 auto;padding:48px 24px 80px}.admin-hero{margin-bottom:34px}.admin-hero h1{font-size:clamp(2rem,5vw,4rem);margin:.2em 0}.admin-hero p{max-width:760px;color:#52645f}.admin-panel{background:#fff;border:1px solid #e8e2d8;border-radius:22px;padding:26px;margin:24px 0;box-shadow:0 14px 38px rgba(44,39,31,.06)}.admin-panel h2{margin-top:0}.admin-table-wrap{overflow-x:auto}.admin-table{width:100%;border-collapse:collapse}.admin-table th,.admin-table td{text-align:left;padding:13px 10px;border-bottom:1px solid #eee7dc;vertical-align:middle}.admin-table th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:#687771}.admin-email{font-size:.88rem;color:#61716c}.status-chip{display:inline-block;padding:5px 9px;border-radius:999px;background:#fff1cf;color:#7a5500;font-size:.8rem;font-weight:700}.status-chip.active{background:#dcf6ec;color:#086b59}.status-chip.inactive{background:#fbe2df;color:#a13227}.admin-actions{display:flex;gap:7px;flex-wrap:wrap}.admin-actions button{border:0;border-radius:9px;padding:8px 11px;font-weight:700;cursor:pointer}.approve-action,.restore-action{background:#08796d;color:#fff}.reject-action,.suspend-action{background:#f6dedb;color:#982d25}.admin-empty{padding:22px;color:#77837f;text-align:center}.admin-blocked{max-width:700px;margin:60px auto;padding:32px;border-radius:20px;background:#fff3f1;color:#842b24}.back-link{color:#0b7469;font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">句</span><span><strong>Teacher Administration</strong><small>Internal approval workspace</small></span></a>
+    <div class="topbar-actions">
+      <div class="teacher-auth">
+        <div class="teacher-account" id="teacherAccount" hidden><img id="teacherAccountPhoto" alt=""><span><strong id="teacherAccountName"></strong><small id="teacherAccountEmail"></small></span></div>
+        <button class="google-sign-in-button" id="googleSignInButton" type="button">Sign in with Google</button>
+        <button class="teacher-sign-out-button" id="googleSignOutButton" type="button" hidden>Sign out</button>
+      </div>
+    </div>
+  </header>
+  <div class="auth-message" id="authMessage" role="status" aria-live="polite">Checking administrator account…</div>
+  <main class="admin-main">
+    <section class="admin-hero"><span class="step">ADMIN ONLY</span><h1>Teacher access</h1><p>Compare each verified Google account with your Google Form response sheet, then approve, reject, suspend, or restore access.</p><a class="back-link" href="index.html">← Back to sentence bank</a></section>
+    <div id="adminBlocked" class="admin-blocked">Sign in with the administrator Google account to open this page.</div>
+    <div id="adminWorkspace" hidden>
+      <section class="admin-panel"><h2>Pending requests</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Teacher</th><th>Google account</th><th>Requested</th><th>Status</th><th>Action</th></tr></thead><tbody id="requestRows"></tbody></table></div><div class="admin-empty" id="requestEmpty">No pending requests.</div></section>
+      <section class="admin-panel"><h2>Approved teachers</h2><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Teacher</th><th>Google account</th><th>Role</th><th>Status</th><th>Action</th></tr></thead><tbody id="approvedRows"></tbody></table></div><div class="admin-empty" id="approvedEmpty">No approved teachers yet.</div></section>
+    </div>
+  </main>
+  <script type="module" src="firebase-auth.js?v=20260919-4"></script>
+  <script type="module" src="admin.js?v=20260919-1"></script>
+</body>
+</html>
