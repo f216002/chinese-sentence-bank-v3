@@ -15,7 +15,16 @@ import { auth, app } from './firebase-auth.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
 
 const db = getFirestore(app);
+const ADMIN_EMAIL = 'f216002@gmail.com';
 let stopSentenceListener = null;
+
+function approvalDocument(uid) {
+  return doc(db, 'approvedTeachers', uid);
+}
+
+function accessRequestDocument(uid) {
+  return doc(db, 'accessRequests', uid);
+}
 
 function teacherPath(uid) {
   return doc(db, 'teachers', uid);
@@ -49,9 +58,31 @@ function dispatch(name, detail) {
   window.dispatchEvent(new CustomEvent(name, { detail }));
 }
 
+function publishAccess(user, status, extra = {}) {
+  window.MCSB_ACCESS = Object.freeze({
+    ready: status !== 'checking',
+    status,
+    user: user ? Object.freeze({
+      uid: user.uid,
+      displayName: user.displayName || '',
+      email: user.email || '',
+      photoURL: user.photoURL || ''
+    }) : null,
+    ...extra
+  });
+  dispatch('mcsb-access-changed', window.MCSB_ACCESS);
+}
+
+function requireApprovedAccess() {
+  if (window.MCSB_ACCESS?.status !== 'approved') {
+    throw new Error('Your teacher account is not approved yet.');
+  }
+}
+
 async function saveSentence(sentence) {
   const user = auth.currentUser;
   if (!user) throw new Error('Please sign in with Google first.');
+  requireApprovedAccess();
   const payload = publicSentenceData(sentence);
   payload.teacherUid = user.uid;
   payload.createdAt = serverTimestamp();
@@ -62,6 +93,7 @@ async function saveSentence(sentence) {
 async function deleteSentence(recordId) {
   const user = auth.currentUser;
   if (!user) throw new Error('Please sign in with Google first.');
+  requireApprovedAccess();
   if (!recordId) throw new Error('The sentence ID is missing.');
   await Promise.all([
     deleteDoc(doc(db, 'teachers', user.uid, 'sentences', recordId)),
@@ -72,6 +104,7 @@ async function deleteSentence(recordId) {
 async function saveModelAudio(recordId, audioBase64, mimeType, byteSize) {
   const user = auth.currentUser;
   if (!user) throw new Error('Please sign in with Google first.');
+  requireApprovedAccess();
   if (!recordId) throw new Error('The sentence ID is missing.');
   if (!audioBase64) throw new Error('The recording is empty.');
   if (Number(byteSize) > 650000 || audioBase64.length > 900000) {
@@ -94,6 +127,7 @@ async function saveModelAudio(recordId, audioBase64, mimeType, byteSize) {
 async function loadModelAudio(recordId) {
   const user = auth.currentUser;
   if (!user) throw new Error('Please sign in with Google first.');
+  requireApprovedAccess();
   if (!recordId) throw new Error('The sentence ID is missing.');
   const snapshot = await getDoc(modelAudioDocument(user.uid, recordId));
   return snapshot.exists() ? snapshot.data() : null;
@@ -134,6 +168,68 @@ async function openTeacherBank(user) {
   });
 }
 
+async function closeTeacherBank(user = null) {
+  if (stopSentenceListener) {
+    stopSentenceListener();
+    stopSentenceListener = null;
+  }
+  dispatch('mcsb-bank-changed', { user, sentences: [] });
+}
+
+async function resolveTeacherAccess(user) {
+  if (!user) {
+    publishAccess(null, 'signed-out');
+    await closeTeacherBank(null);
+    return;
+  }
+
+  publishAccess(user, 'checking');
+  const isAdmin = String(user.email || '').toLowerCase() === ADMIN_EMAIL;
+  if (isAdmin) {
+    publishAccess(user, 'approved', { isAdmin: true, role: 'admin' });
+    await openTeacherBank(user);
+    return;
+  }
+
+  const approval = await getDoc(approvalDocument(user.uid));
+  if (approval.exists() && approval.data().active === true) {
+    publishAccess(user, 'approved', {
+      isAdmin: false,
+      role: approval.data().role || 'teacher'
+    });
+    await openTeacherBank(user);
+    return;
+  }
+
+  if (approval.exists() && approval.data().active === false) {
+    const approvalStatus = approval.data().status || 'suspended';
+    publishAccess(user, approvalStatus, { isAdmin: false });
+    await closeTeacherBank(user);
+    return;
+  }
+
+  const requestRef = accessRequestDocument(user.uid);
+  const requestSnapshot = await getDoc(requestRef);
+  let requestStatus = requestSnapshot.exists()
+    ? requestSnapshot.data().status || 'pending'
+    : 'pending';
+
+  if (!requestSnapshot.exists()) {
+    await setDoc(requestRef, {
+      uid: user.uid,
+      email: user.email || '',
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      status: 'pending',
+      requestedAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  publishAccess(user, requestStatus, { isAdmin: false });
+  await closeTeacherBank(user);
+}
+
 window.MCSB_DB = Object.freeze({
   db,
   saveSentence,
@@ -144,10 +240,13 @@ window.MCSB_DB = Object.freeze({
 dispatch('mcsb-db-ready', { ready: true });
 
 onAuthStateChanged(auth, user => {
-  openTeacherBank(user).catch(error => {
+  resolveTeacherAccess(user).catch(error => {
+    publishAccess(user, 'error', {
+      message: error.message || error.code || 'Could not verify teacher access.'
+    });
     dispatch('mcsb-bank-error', {
       user,
-      message: error.message || error.code || 'Could not open the teacher bank.'
+      message: error.message || error.code || 'Could not verify teacher access.'
     });
   });
 });
