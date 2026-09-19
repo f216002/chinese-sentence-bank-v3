@@ -8,7 +8,8 @@ const crypto = require("node:crypto");
 initializeApp();
 
 const AZURE_SPEECH_KEY = defineSecret("AZURE_SPEECH_KEY");
-const REGION = "eastus";
+const FUNCTION_REGION = "us-east1";
+const AZURE_REGION = "eastus";
 const LOCALE = "km-KH";
 const VOICE = "km-KH-SreymomNeural";
 const OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
@@ -77,7 +78,7 @@ async function audioResult(cacheRef, usageRef, cached) {
 
 exports.synthesizeKhmer = onCall(
   {
-    region: REGION,
+    region: FUNCTION_REGION,
     secrets: [AZURE_SPEECH_KEY],
     timeoutSeconds: 60,
     memory: "256MiB",
@@ -167,7 +168,7 @@ exports.synthesizeKhmer = onCall(
     try {
       const ssml = `<speak version="1.0" xml:lang="${LOCALE}"><voice name="${VOICE}"><prosody rate="0%">${escapeXml(text)}</prosody></voice></speak>`;
       const response = await fetch(
-        `https://${REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
+        `https://${AZURE_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
         {
           method: "POST",
           headers: {
