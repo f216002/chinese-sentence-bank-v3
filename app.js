@@ -509,11 +509,12 @@ function speakHindi(text, button) {
 
 async function speakSourceLanguage(text, locale, button) {
   const normalizedLocale = String(locale || '').toLowerCase();
-  if (normalizedLocale === 'km-kh') {
-    if (window.MCSB_TTS?.playKhmer) {
-      await window.MCSB_TTS.playKhmer(text, button, voiceStatus);
+  if (normalizedLocale === 'km-kh' || normalizedLocale === 'th-th') {
+    const languageName = normalizedLocale === 'km-kh' ? 'Khmer' : 'Thai';
+    if (window.MCSB_TTS?.playSourceSpeech) {
+      await window.MCSB_TTS.playSourceSpeech(text, locale, languageName, button, voiceStatus);
     } else {
-      voiceStatus(button, 'Khmer cloud voice is still loading. Please tap play again.');
+      voiceStatus(button, `${languageName} cloud voice is still loading. Please tap play again.`);
     }
     return;
   }
