@@ -23,6 +23,7 @@ const accountPhoto = document.getElementById('teacherAccountPhoto');
 const accountName = document.getElementById('teacherAccountName');
 const accountEmail = document.getElementById('teacherAccountEmail');
 const authMessage = document.getElementById('authMessage');
+const adminButton = document.getElementById('adminButton');
 
 function setAuthMessage(message, isError = false) {
   authMessage.textContent = message;
@@ -48,6 +49,7 @@ function showSignedOut() {
   signInButton.hidden = false;
   signOutButton.hidden = true;
   accountPanel.hidden = true;
+  if (adminButton) adminButton.hidden = true;
   accountPhoto.removeAttribute('src');
   accountName.textContent = '';
   accountEmail.textContent = '';
@@ -58,6 +60,7 @@ function showSignedIn(user) {
   signInButton.hidden = true;
   signOutButton.hidden = false;
   accountPanel.hidden = false;
+  if (adminButton) adminButton.hidden = String(user.email || '').toLowerCase() !== 'f216002@gmail.com';
   accountName.textContent = user.displayName || 'Teacher';
   accountEmail.textContent = user.email || '';
   if (user.photoURL) {
