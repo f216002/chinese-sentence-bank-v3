@@ -10,10 +10,23 @@ initializeApp();
 const AZURE_SPEECH_KEY = defineSecret("AZURE_SPEECH_KEY");
 const FUNCTION_REGION = "us-east1";
 const AZURE_REGION = "eastus";
-const LOCALE = "km-KH";
-const VOICE = "km-KH-SreymomNeural";
 const OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3";
-const CACHE_VERSION = "km-kh-sreymom-rate-80-v2";
+const SPEECH_PROFILES = {
+  "km-KH": {
+    name: "Khmer",
+    voice: "km-KH-SreymomNeural",
+    rate: "-20%",
+    cacheVersion: "km-kh-sreymom-rate-80-v2",
+    pattern: /[\u1780-\u17ff]/u,
+  },
+  "th-TH": {
+    name: "Thai",
+    voice: "th-TH-PremwadeeNeural",
+    rate: "-15%",
+    cacheVersion: "th-th-premwadee-rate-85-v1",
+    pattern: /[\u0e00-\u0e7f]/u,
+  },
+};
 const DAILY_LIMIT = 30;
 const MAX_CHARACTERS = 300;
 const ADMIN_EMAIL = "f216002@gmail.com";
@@ -87,20 +100,25 @@ exports.synthesizeKhmer = onCall(
   async (request) => {
     await assertApprovedTeacher(request.auth);
 
+    const locale = String(request.data?.locale || "km-KH");
+    const profile = SPEECH_PROFILES[locale];
+    if (!profile) throw new HttpsError("invalid-argument", "This cloud voice is not supported.");
+    const { name, voice, rate, cacheVersion, pattern } = profile;
+
     const text = normalizeText(request.data?.text);
-    if (!text) throw new HttpsError("invalid-argument", "Khmer text is required.");
+    if (!text) throw new HttpsError("invalid-argument", `${name} text is required.`);
     if (Array.from(text).length > MAX_CHARACTERS) {
       throw new HttpsError("invalid-argument", `Text must be ${MAX_CHARACTERS} characters or fewer.`);
     }
-    if (!/[\u1780-\u17ff]/u.test(text)) {
-      throw new HttpsError("invalid-argument", "The sentence must contain Khmer text.");
+    if (!pattern.test(text)) {
+      throw new HttpsError("invalid-argument", `The sentence must contain ${name} text.`);
     }
 
     const uid = request.auth.uid;
     const day = cambodiaDateKey();
     const cacheId = crypto
       .createHash("sha256")
-      .update(`${CACHE_VERSION}|-20%|${LOCALE}|${VOICE}|${text}`)
+      .update(`${cacheVersion}|${rate}|${locale}|${voice}|${text}`)
       .digest("hex");
     const db = getFirestore();
     const cacheRef = db.doc(`sharedAudioCache/${cacheId}`);
@@ -142,9 +160,9 @@ exports.synthesizeKhmer = onCall(
       tx.set(cacheRef, {
         status: "generating",
         text,
-        locale: LOCALE,
-        voice: VOICE,
-        cacheVersion: CACHE_VERSION,
+        locale,
+        voice,
+        cacheVersion,
         requestedBy: uid,
         startedAt: Timestamp.now(),
       }, { merge: true });
@@ -164,9 +182,9 @@ exports.synthesizeKhmer = onCall(
       throw new HttpsError("aborted", "This sentence is being prepared. Please tap play again in a moment.");
     }
 
-    const objectPath = `shared-tts/${LOCALE}/${cacheId}.mp3`;
+    const objectPath = `shared-tts/${locale}/${cacheId}.mp3`;
     try {
-      const ssml = `<speak version="1.0" xml:lang="${LOCALE}"><voice name="${VOICE}"><prosody rate="-20%">${escapeXml(text)}</prosody></voice></speak>`;
+      const ssml = `<speak version="1.0" xml:lang="${locale}"><voice name="${voice}"><prosody rate="${rate}">${escapeXml(text)}</prosody></voice></speak>`;
       const response = await fetch(
         `https://${AZURE_REGION}.tts.speech.microsoft.com/cognitiveservices/v1`,
         {
@@ -194,7 +212,7 @@ exports.synthesizeKhmer = onCall(
         contentType: "audio/mpeg",
         metadata: {
           cacheControl: "private, max-age=31536000, immutable",
-          metadata: { locale: LOCALE, voice: VOICE, cacheVersion: CACHE_VERSION },
+          metadata: { locale, voice, cacheVersion },
         },
       });
       await cacheRef.set({
@@ -213,7 +231,7 @@ exports.synthesizeKhmer = onCall(
         remainingToday: Math.max(0, DAILY_LIMIT - reservation.usedToday),
       };
     } catch (error) {
-      console.error("Khmer synthesis failed", error);
+      console.error(`${name} synthesis failed`, error);
       await db.runTransaction(async (tx) => {
         const [cacheSnap, usageSnap] = await Promise.all([
           tx.get(cacheRef),
@@ -228,7 +246,7 @@ exports.synthesizeKhmer = onCall(
           }, { merge: true });
         }
       });
-      throw new HttpsError("internal", "Khmer audio could not be generated. Please try again.");
+      throw new HttpsError("internal", `${name} audio could not be generated. Please try again.`);
     }
   },
 );
