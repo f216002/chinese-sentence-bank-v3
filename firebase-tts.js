@@ -8,8 +8,8 @@ let activeAudio = null;
 function friendlyError(error) {
   const code = String(error?.code || "");
   if (code.includes("unauthenticated")) return "Please sign in with Google first.";
-  if (code.includes("permission-denied")) return "Teacher approval is required for Khmer cloud voice.";
-  if (code.includes("resource-exhausted")) return "Today's 30 new Khmer voices are used. Previously generated sentences can still play.";
+  if (code.includes("permission-denied")) return "Teacher approval is required for cloud voice.";
+  if (code.includes("resource-exhausted")) return "Today's 30 new cloud voices are used. Previously generated sentences can still play.";
   if (code.includes("invalid-argument")) return error?.message || "Please check the Khmer sentence.";
   if (code.includes("aborted")) return "This voice is being prepared. Please tap play again in a moment.";
   return "Khmer cloud voice is temporarily unavailable. Please try again.";
