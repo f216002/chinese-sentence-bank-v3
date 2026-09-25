@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V3 Pilot — 第一冊第1課 歡迎你來臺灣！</title>
+<script src="pilot-curriculum-data.js"></script>
+<style>
+  :root { --bg:#f7f5f0; --card:#ffffff; --ink:#2b2b2b; --muted:#8a8a8a;
+          --accent:#b3541e; --accent-soft:#f5e6d8; --line:#e8e2d6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:-apple-system,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+         line-height:1.65; }
+  header { background:#2e2a26; color:#f5efe4; padding:28px 20px 22px; text-align:center; }
+  header h1 { margin:0 0 6px; font-size:1.5rem; letter-spacing:.05em; }
+  header p { margin:4px 0; color:#cbbfa9; font-size:.9rem; }
+  .pilot-badge { display:inline-block; background:#b3541e; color:#fff; font-size:.75rem;
+                 padding:3px 12px; border-radius:20px; letter-spacing:.15em; margin-bottom:10px; }
+  .langbar { position:sticky; top:0; z-index:10; background:rgba(255,255,255,.96);
+             border-bottom:1px solid var(--line); padding:10px 16px;
+             display:flex; gap:10px; align-items:center; justify-content:center;
+             backdrop-filter:blur(6px); }
+  .langbar span.lbl { font-size:.85rem; color:var(--muted); }
+  .langbtn { border:1px solid var(--line); background:#fff; color:var(--ink);
+             padding:8px 18px; border-radius:24px; font-size:.95rem; cursor:pointer; }
+  .langbtn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .draft-note { text-align:center; font-size:.8rem; color:var(--muted); padding:8px 16px 0; }
+  nav.sections { display:flex; gap:8px; overflow-x:auto; padding:14px 16px 4px;
+                 justify-content:flex-start; max-width:860px; margin:0 auto; }
+  nav.sections button { flex:0 0 auto; border:1px solid var(--line); background:#fff;
+                        padding:7px 16px; border-radius:20px; font-size:.9rem; cursor:pointer; }
+  nav.sections button.active { background:#2e2a26; color:#fff; border-color:#2e2a26; }
+  main { max-width:860px; margin:0 auto; padding:10px 16px 60px; }
+  .sec-title { font-size:1.15rem; margin:26px 4px 12px; padding-left:10px;
+               border-left:4px solid var(--accent); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px;
+          padding:16px 18px; margin:0 0 12px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .card .zh { font-size:1.25rem; font-weight:600; }
+  .card .py { color:var(--accent); font-size:.95rem; margin:2px 0 10px; }
+  .card .speaker { display:inline-block; font-size:.78rem; background:var(--accent-soft);
+                   color:var(--accent); border-radius:6px; padding:2px 10px; margin-bottom:8px; }
+  .card .src { font-size:1.02rem; margin:6px 0 2px; }
+  .card .roman { color:#6b5d4f; font-size:.92rem; font-style:italic; margin:0 0 6px; }
+  .card .expl { font-size:.92rem; color:#4a4a4a; background:#faf8f3;
+                border-left:3px solid var(--line); padding:8px 12px; border-radius:0 8px 8px 0; }
+  .card .expl:empty { display:none; }
+  .card .meta { margin-top:8px; font-size:.75rem; color:var(--muted); }
+  .status-draft { color:#b3541e; } .status-reviewed { color:#2e7d32; }
+  footer { text-align:center; color:var(--muted); font-size:.8rem; padding:24px 16px 40px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="pilot-badge">V3 PILOT</div>
+  <h1>第一冊第1課：歡迎你來臺灣！</h1>
+  <p>公版多語言課程 · 第一冊第1課 · 94 條 · 中文＋拼音固定顯示</p>
+</header>
+
+<div class="langbar">
+  <span class="lbl">學生母語 / Student language:</span>
+  <button class="langbtn active" data-lang="hi">🇮🇳 印地文</button>
+  <button class="langbtn" data-lang="en">🇬🇧 English</button>
+</div>
+<div class="draft-note" id="draftNote"></div>
+
+<nav class="sections" id="secNav"></nav>
+<main id="content"></main>
+<footer>V3 公版課程 pilot · 印地文為 V2 已審核基線 · 英文為 AI 初稿待老師校對</footer>
+
+<script>
+(function(){
+  var DATA = window.PILOT_CURRICULUM || [];
+  var LANG = { hi:{label:'印地文', note:'印地文：沿用 V2 已審核版本'}, 
+               en:{label:'English', note:'English: AI draft — pending teacher review（AI 初稿，待老師校對）'} };
+  var lang = 'hi';
+  var sections = [];
+  DATA.forEach(function(r){ if(sections.indexOf(r.section)<0) sections.push(r.section); });
+
+  var nav = document.getElementById('secNav');
+  sections.forEach(function(s, i){
+    var n = DATA.filter(function(r){return r.section===s;}).length;
+    var b = document.createElement('button');
+    b.textContent = s + ' (' + n + ')';
+    b.dataset.sec = s;
+    if(i===0) b.classList.add('active');
+    b.onclick = function(){
+      nav.querySelectorAll('button').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active');
+      render(s);
+      document.getElementById('content').scrollIntoView();
+    };
+    nav.appendChild(b);
+  });
+
+  document.querySelectorAll('.langbtn').forEach(function(btn){
+    btn.onclick = function(){
+      document.querySelectorAll('.langbtn').forEach(function(x){x.classList.remove('active');});
+      btn.classList.add('active');
+      lang = btn.dataset.lang;
+      var active = nav.querySelector('button.active');
+      render(active ? active.dataset.sec : sections[0]);
+    };
+  });
+
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function render(sec){
+    document.getElementById('draftNote').textContent = LANG[lang].note;
+    var main = document.getElementById('content');
+    var html = '<div class="sec-title">'+esc(sec)+'</div>';
+    DATA.filter(function(r){return r.section===sec;}).forEach(function(r){
+      var t = r[lang] || r.hi;
+      html += '<div class="card">'
+        + (r.speaker ? '<div><span class="speaker">'+esc(r.speaker)+'</span></div>' : '')
+        + '<div class="zh">'+esc(r.zh)+'</div>'
+        + (r.pinyin ? '<div class="py">'+esc(r.pinyin)+'</div>' : '')
+        + '<div class="src">'+esc(t.source)+'</div>'
+        + (t.roman ? '<div class="roman">'+esc(t.roman)+'</div>' : '')
+        + '<div class="expl">'+esc(t.explanation)+'</div>'
+        + '<div class="meta">'+esc(r.id)+' · '
+        + (t.status==='draft'
+            ? '<span class="status-draft">⬤ AI 初稿 draft</span>'
+            : '<span class="status-reviewed">⬤ 已審核 reviewed</span>')
+        + '</div></div>';
+    });
+    main.innerHTML = html;
+  }
+  render(sections[0]);
+})();
+</script>
+</body>
+</html>
