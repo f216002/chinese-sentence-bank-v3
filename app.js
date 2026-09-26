@@ -1032,6 +1032,11 @@ function updateV3SaveControls() {
 
 async function savePreviewToV3() {
   if (!state.preview) return;
+  // Shared-curriculum supplement mode: tag the sentence with its lesson before saving.
+  if (window.__curSupplementLesson && state.preview) {
+    const extra = window.__curSupplementLesson.name + ', 補充';
+    state.preview.tags = state.preview.tags ? (state.preview.tags + ', ' + extra) : extra;
+  }
   const button = $('saveButton');
   button.disabled = true;
   $('v3SaveMessage').textContent = 'Saving to your personal bank…';
@@ -1040,11 +1045,14 @@ async function savePreviewToV3() {
     state.preview = null;
     $('pasteInput').value = '';
     $('previewPanel').classList.add('hidden');
-    $('v3SaveMessage').textContent = '';
+    $('v3SaveMessage').textContent = window.__curSupplementLesson
+      ? '已存入你的私人句庫（本課補充）。公版課程未被改動。'
+      : '';
     $('libraryTitle').scrollIntoView({behavior:'smooth'});
   } catch (error) {
     $('v3SaveMessage').textContent = `Save failed: ${error.message || 'Unknown error.'}`;
   } finally {
+    window.__curSupplementLesson = null;
     updateV3SaveControls();
   }
 }
@@ -1225,3 +1233,153 @@ window.addEventListener('mcsb-db-ready', () => {
 });
 window.addEventListener('mcsb-bank-changed', receiveV3Bank);
 window.addEventListener('mcsb-bank-error', showV3BankError);
+
+/* ================= Shared Curriculum (V3 pilot · read-only for teachers) =================
+ * Pilot scope: Book 1 Lesson 1 (你好！), Hindi + English, embedded data file.
+ * Teachers cannot edit shared content. Per-card actions copy into the teacher's
+ * own private bank (teachers/{uid}/sentences), where V2's full add/edit/delete
+ * workflow applies. Audio reuses V3's tested TTS routing:
+ *   Chinese -> speakChinese (browser zh-TW) · Hindi/English -> speakSourceLanguage
+ *   (browser voices; ta/th/km/vi/ne/bn use Azure TTS via Cloud Function).
+ */
+(function initSharedCurriculum(){
+  var section = $('sharedCurriculum');
+  if (!section) return;
+  var DATA = (window.PILOT_CURRICULUM && window.PILOT_CURRICULUM.records) || [];
+  var ORDER = ['goal', 'text', 'vocab', 'grammar', 'exercise', 'culture'];
+  var NAMES = { goal: '目標', text: '課文', vocab: '生詞', grammar: '語法', exercise: '練習', culture: '文化' };
+  var ICONS = { goal: '🎯', text: '📖', vocab: '📝', grammar: '📐', exercise: '✏️', culture: '🌏' };
+  var LOCALES = { hi: 'hi-IN', en: 'en-US' };
+  var LANG_LABEL = { hi: '印地文', en: 'English' };
+  var LESSON_NAME = '第一冊第1課 你好！';
+  var curLang = 'hi', curSection = 'text';
+
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function tr(rec){ return rec[curLang] || rec.hi; }
+  function msg(t){ var el = $('curMessage'); if (el) el.textContent = t || ''; }
+
+  function renderTabs(){
+    var tabs = $('curTabs'); tabs.innerHTML = '';
+    ORDER.forEach(function(key){
+      var n = DATA.filter(function(r){ return r.section === key; }).length;
+      if (!n) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lab-tab' + (key === curSection ? ' active' : '');
+      b.textContent = ICONS[key] + ' ' + NAMES[key] + '（' + n + '）';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', key === curSection ? 'true' : 'false');
+      b.addEventListener('click', function(){ curSection = key; render(); });
+      tabs.appendChild(b);
+    });
+  }
+
+  function cardNode(rec){
+    var t = tr(rec);
+    var node = document.createElement('article');
+    node.className = 'sentence-card curriculum-card';
+    node.innerHTML =
+        '<div class="card-top"><span class="category-pill">' + esc(NAMES[rec.section] || rec.section) + '</span>'
+      + '<div class="card-admin"><span class="curriculum-readonly">公版 · 唯讀</span></div></div>'
+      + (rec.speaker ? '<div><span class="curriculum-speaker">' + esc(rec.speaker) + '</span></div>' : '')
+      + '<div class="hindi-row"><p class="hindi">' + esc(t.source) + '</p>'
+      + '<button class="hindi-speak-button" type="button" aria-label="Play ' + esc(LANG_LABEL[curLang]) + ' pronunciation">▶</button></div>'
+      + (t.roman ? '<p class="roman-hindi">Roman: ' + esc(t.roman) + '</p>' : '')
+      + '<div class="chinese-row"><h3 class="chinese">' + esc(rec.zh) + '</h3>'
+      + '<button class="speak-button" type="button" aria-label="Play Taiwanese Mandarin pronunciation">▶</button></div>'
+      + (rec.pinyin ? '<p class="pinyin">' + esc(rec.pinyin) + '</p>' : '')
+      + '<details><summary><span class="explanation-label">' + esc(LANG_LABEL[curLang]) + '解說</span> <span>＋</span></summary>'
+      + '<div class="explanation">' + esc(t.explanation || '') + '</div></details>'
+      + '<div class="curriculum-actions">'
+      + '<button class="secondary-button" type="button" data-act="copy">📋 複製到私人句庫</button>'
+      + '<button class="secondary-button" type="button" data-act="fav">⭐ 收藏</button>'
+      + '</div>';
+    var srcBtn = node.querySelector('.hindi-speak-button');
+    srcBtn.addEventListener('click', function(){ speakSourceLanguage(t.source, LOCALES[curLang], srcBtn); });
+    var zhBtn = node.querySelector('.speak-button');
+    zhBtn.addEventListener('click', function(){ speakChinese(rec.zh, zhBtn); });
+    node.querySelector('[data-act="copy"]').addEventListener('click', function(e){ copyToBank(rec, false, e.currentTarget); });
+    node.querySelector('[data-act="fav"]').addEventListener('click', function(e){ copyToBank(rec, true, e.currentTarget); });
+    return node;
+  }
+
+  function render(){
+    renderTabs();
+    var grid = $('curGrid'); grid.innerHTML = '';
+    DATA.filter(function(r){ return r.section === curSection; }).forEach(function(rec){
+      grid.appendChild(cardNode(rec));
+    });
+    $('curDraftNote').textContent = curLang === 'en'
+      ? 'English: AI draft — pending teacher review（AI 初稿，待老師校對）'
+      : '印地文：V2 reviewed baseline';
+  }
+
+  function buildPaste(rec, t){
+    return ['SOURCE:', t.source, '', 'CHINESE:', rec.zh, '', 'PINYIN:', rec.pinyin || '', '',
+      'ROMANIZATION:', t.roman || '', '', 'EXPLANATION:', t.explanation || '', '',
+      'CATEGORY:', '課程', '', 'TAGS:', '公版課程, ' + LESSON_NAME].join('\n');
+  }
+
+  async function copyToBank(rec, favorite, btn){
+    if (!v3AccessApproved){ msg('請先登入並通過老師審核。'); return; }
+    btn.disabled = true;
+    msg(favorite ? '收藏中…' : '複製到私人句庫中…');
+    try {
+      var t = tr(rec);
+      var tags = ['公版課程', LESSON_NAME, NAMES[rec.section] || rec.section];
+      if (favorite) tags.unshift('收藏');
+      await window.MCSB_DB.saveSentence({
+        sourceLanguage: curLang,
+        sourceSentence: t.source,
+        romanization: t.roman || '',
+        chineseSentence: rec.zh,
+        pinyin: rec.pinyin || '',
+        explanation: t.explanation || '',
+        category: '課程',
+        tags: tags.join(', '),
+        aiSource: 'V3 公版課程 pilot',
+        originalPaste: buildPaste(rec, t)
+      });
+      msg((favorite ? '已收藏 ⭐' : '已複製到私人句庫 📋') + ' —— 可在下方 My sentence bank 自由修改或刪除。2 秒後重新整理…');
+      setTimeout(function(){
+        try { location.hash = 'sharedCurriculum'; } catch (_){}
+        location.reload();
+      }, 2000);
+    } catch (err) {
+      msg('複製失敗：' + ((err && err.message) || '未知錯誤'));
+      btn.disabled = false;
+    }
+  }
+
+  function startSupplement(){
+    window.__curSupplementLesson = { code: 'B1-L01', name: LESSON_NAME };
+    msg('');
+    $('createPrompt').scrollIntoView({ behavior: 'smooth' });
+    $('promptMessage').textContent = '補充模式：「' + LESSON_NAME + '」—— 經 AI 流程產生的下一句將自動標記為本課補充，存入你的私人句庫（公版內容不會被改動）。';
+    setTimeout(function(){ try { $('promptSentence').focus({ preventScroll: true }); } catch (_){} }, 600);
+  }
+
+  $('curLangHi').addEventListener('click', function(){
+    curLang = 'hi';
+    $('curLangHi').classList.add('active'); $('curLangHi').setAttribute('aria-selected', 'true');
+    $('curLangEn').classList.remove('active'); $('curLangEn').setAttribute('aria-selected', 'false');
+    render();
+  });
+  $('curLangEn').addEventListener('click', function(){
+    curLang = 'en';
+    $('curLangEn').classList.add('active'); $('curLangEn').setAttribute('aria-selected', 'true');
+    $('curLangHi').classList.remove('active'); $('curLangHi').setAttribute('aria-selected', 'false');
+    render();
+  });
+  $('curAddSupplement').addEventListener('click', startSupplement);
+
+  if (!DATA.length){
+    $('curGrid').innerHTML = '<div class="loading-card">公版課程資料載入失敗，請重新整理頁面。</div>';
+    return;
+  }
+  render();
+
+  if (location.hash === '#sharedCurriculum'){
+    setTimeout(function(){ section.scrollIntoView(); }, 900);
+  }
+})();
