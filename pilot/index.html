@@ -38,6 +38,13 @@
           padding:16px 18px; margin:0 0 12px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
   .card .zh { font-size:1.25rem; font-weight:600; }
   .card .py { color:var(--accent); font-size:.95rem; margin:2px 0 10px; }
+  .speak { border:1px solid var(--line); background:#fff; border-radius:50%;
+           width:34px; height:34px; font-size:1rem; cursor:pointer; line-height:1;
+           vertical-align:middle; margin-left:8px; }
+  .speak.small { width:28px; height:28px; font-size:.85rem; }
+  .speak.speaking { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .tts-note { max-width:860px; margin:0 auto; padding:10px 16px 0; font-size:.8rem; color:var(--muted); }
+  .tts-note b { color:var(--ink); }
   .card .speaker { display:inline-block; font-size:.78rem; background:var(--accent-soft);
                    color:var(--accent); border-radius:6px; padding:2px 10px; margin-bottom:8px; }
   .card .src { font-size:1.02rem; margin:6px 0 2px; }
@@ -63,6 +70,7 @@
   <button class="langbtn" data-lang="en">🇬🇧 English</button>
 </div>
 <div class="draft-note" id="draftNote"></div>
+<div class="tts-note">🔊 中文用瀏覽器語音（zh-TW，同 V2）。來源語言：<b>印地文／英文用瀏覽器語音</b>（hi-IN／en-US），<b>不消耗 Azure 額度</b>。V3 既有架構：泰米爾／泰／高棉／越南／尼泊爾／孟加拉走 Azure TTS（每人每天 30 個新語音、共用快取）；中文／印地文／印尼／西班牙／英文走瀏覽器語音。</div>
 
 <nav class="sections" id="secNav"></nav>
 <main id="content"></main>
@@ -105,6 +113,43 @@
 
   function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
+  /* ---- Browser TTS (V3 existing approach: zh/hi/id/es/en use browser voices;
+     ta/th/km/vi/ne/bn use Azure TTS via Cloud Function, not needed on this page) ---- */
+  var voiceCache = {};
+  function pickVoice(langPrefix){
+    if(voiceCache[langPrefix]) return voiceCache[langPrefix];
+    var voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+    var v = voices.find(function(x){ return x.lang && x.lang.toLowerCase().indexOf(langPrefix)===0 && /google/i.test(x.name); })
+         || voices.find(function(x){ return x.lang && x.lang.toLowerCase().indexOf(langPrefix)===0; })
+         || null;
+    voiceCache[langPrefix] = v;
+    return v;
+  }
+  if(window.speechSynthesis){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = function(){ voiceCache = {}; }; }
+  var currentBtn = null;
+  function speak(text, langPrefix, btn){
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    if(currentBtn) currentBtn.classList.remove('speaking');
+    var u = new SpeechSynthesisUtterance(text);
+    var v = pickVoice(langPrefix);
+    if(v) u.voice = v;
+    u.lang = v ? v.lang : langPrefix;
+    u.rate = 0.92;
+    currentBtn = btn;
+    btn.classList.add('speaking');
+    u.onend = u.onerror = function(){ btn.classList.remove('speaking'); if(currentBtn===btn) currentBtn=null; };
+    speechSynthesis.speak(u);
+  }
+  var SRC_VOICE = { hi:'hi-in', en:'en-us' };
+  window.pilotSpeak = function(id, which, btn){
+    var r = null;
+    for(var i=0;i<DATA.length;i++){ if(DATA[i].id===id){ r=DATA[i]; break; } }
+    if(!r) return;
+    if(which==='zh'){ speak(r.zh, 'zh-tw', btn); }
+    else { var t = r[lang] || r.hi; speak(t.source, SRC_VOICE[lang]||'en-us', btn); }
+  };
+
   function render(sec){
     document.getElementById('draftNote').textContent = LANG[lang].note;
     var main = document.getElementById('content');
@@ -113,9 +158,11 @@
       var t = r[lang] || r.hi;
       html += '<div class="card">'
         + (r.speaker ? '<div><span class="speaker">'+esc(r.speaker)+'</span></div>' : '')
-        + '<div class="zh">'+esc(r.zh)+'</div>'
+        + '<div class="zh">'+esc(r.zh)
+        + '<button class="speak" onclick="pilotSpeak(\''+r.id+'\',\'zh\',this)" title="朗讀中文">🔊</button></div>'
         + (r.pinyin ? '<div class="py">'+esc(r.pinyin)+'</div>' : '')
-        + '<div class="src">'+esc(t.source)+'</div>'
+        + '<div class="src">'+esc(t.source)
+        + '<button class="speak small" onclick="pilotSpeak(\''+r.id+'\',\'src\',this)" title="朗讀來源語言">🔊</button></div>'
         + (t.roman ? '<div class="roman">'+esc(t.roman)+'</div>' : '')
         + '<div class="expl">'+esc(t.explanation)+'</div>'
         + '<div class="meta">'+esc(r.id)+' · '
