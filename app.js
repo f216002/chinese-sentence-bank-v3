@@ -1247,13 +1247,12 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
   if (!section) return;
   var _raw = window.PILOT_CURRICULUM;
   var DATA = Array.isArray(_raw) ? _raw : ((_raw && _raw.records) || []);
-  var ORDER = ['goal', 'text', 'vocab', 'grammar', 'exercise', 'culture'];
-  var NAMES = { goal: '目標', text: '課文', vocab: '生詞', grammar: '語法', exercise: '練習', culture: '文化' };
-  var ICONS = { goal: '🎯', text: '📖', vocab: '📝', grammar: '📐', exercise: '✏️', culture: '🌏' };
+  var ORDER = ['目標', '課文', '生詞', '語法', '練習', '文化'];
+  var ICONS = { '目標': '🎯', '課文': '📖', '生詞': '📝', '語法': '📐', '練習': '✏️', '文化': '🌏' };
   var LOCALES = { hi: 'hi-IN', en: 'en-US' };
   var LANG_LABEL = { hi: '印地文', en: 'English' };
   var LESSON_NAME = '第一冊第1課 你好！';
-  var curLang = 'hi', curSection = 'text';
+  var curLang = 'hi', curSection = '課文';
 
   function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function tr(rec){ return rec[curLang] || rec.hi; }
@@ -1267,7 +1266,7 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'lab-tab' + (key === curSection ? ' active' : '');
-      b.textContent = ICONS[key] + ' ' + NAMES[key] + '（' + n + '）';
+      b.textContent = (ICONS[key] || '') + ' ' + key + '（' + n + '）';
       b.setAttribute('role', 'tab');
       b.setAttribute('aria-selected', key === curSection ? 'true' : 'false');
       b.addEventListener('click', function(){ curSection = key; render(); });
@@ -1280,7 +1279,7 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
     var node = document.createElement('article');
     node.className = 'sentence-card curriculum-card';
     node.innerHTML =
-        '<div class="card-top"><span class="category-pill">' + esc(NAMES[rec.section] || rec.section) + '</span>'
+        '<div class="card-top"><span class="category-pill">' + esc(rec.section) + '</span>'
       + '<div class="card-admin"><span class="curriculum-readonly">公版 · 唯讀</span></div></div>'
       + (rec.speaker ? '<div><span class="curriculum-speaker">' + esc(rec.speaker) + '</span></div>' : '')
       + '<div class="hindi-row"><p class="hindi">' + esc(t.source) + '</p>'
@@ -1327,7 +1326,7 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
     msg(favorite ? '收藏中…' : '複製到私人句庫中…');
     try {
       var t = tr(rec);
-      var tags = ['公版課程', LESSON_NAME, NAMES[rec.section] || rec.section];
+      var tags = ['公版課程', LESSON_NAME, rec.section];
       if (favorite) tags.unshift('收藏');
       await window.MCSB_DB.saveSentence({
         sourceLanguage: curLang,
