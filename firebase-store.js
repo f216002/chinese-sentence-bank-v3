@@ -9,7 +9,8 @@ import {
   orderBy,
   query,
   serverTimestamp,
-  setDoc
+  setDoc,
+  updateDoc
 } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js';
 import { auth, app } from './firebase-auth.js';
 import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js';
@@ -99,6 +100,20 @@ async function deleteSentence(recordId) {
     deleteDoc(doc(db, 'teachers', user.uid, 'sentences', recordId)),
     deleteDoc(modelAudioDocument(user.uid, recordId))
   ]);
+}
+
+/* In-place edit: keeps recordId, createdAt and any teacher recording; only content fields change. */
+async function updateSentence(recordId, fields) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Please sign in with Google first.');
+  requireApprovedAccess();
+  if (!recordId) throw new Error('The sentence ID is missing.');
+  const allowed = {};
+  for (const key of ['sourceLanguage', 'sourceSentence', 'romanization', 'chineseSentence', 'pinyin', 'explanation', 'category', 'tags', 'aiSource', 'originalPaste']) {
+    if (fields[key] !== undefined) allowed[key] = fields[key];
+  }
+  allowed.updatedAt = serverTimestamp();
+  await updateDoc(doc(db, 'teachers', user.uid, 'sentences', recordId), allowed);
 }
 
 async function saveModelAudio(recordId, audioBase64, mimeType, byteSize) {
@@ -234,6 +249,7 @@ window.MCSB_DB = Object.freeze({
   db,
   saveSentence,
   deleteSentence,
+  updateSentence,
   saveModelAudio,
   loadModelAudio
 });
@@ -251,4 +267,4 @@ onAuthStateChanged(auth, user => {
   });
 });
 
-export { db, saveSentence, deleteSentence, saveModelAudio, loadModelAudio };
+export { db, saveSentence, deleteSentence, updateSentence, saveModelAudio, loadModelAudio };
