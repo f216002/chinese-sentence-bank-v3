@@ -1245,7 +1245,8 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
 (function initSharedCurriculum(){
   var section = $('sharedCurriculum');
   if (!section) return;
-  var DATA = (window.PILOT_CURRICULUM && window.PILOT_CURRICULUM.records) || [];
+  var _raw = window.PILOT_CURRICULUM;
+  var DATA = Array.isArray(_raw) ? _raw : ((_raw && _raw.records) || []);
   var ORDER = ['goal', 'text', 'vocab', 'grammar', 'exercise', 'culture'];
   var NAMES = { goal: '目標', text: '課文', vocab: '生詞', grammar: '語法', exercise: '練習', culture: '文化' };
   var ICONS = { goal: '🎯', text: '📖', vocab: '📝', grammar: '📐', exercise: '✏️', culture: '🌏' };
