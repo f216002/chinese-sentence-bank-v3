@@ -15,7 +15,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600&family=Noto+Sans+Devanagari:wght@400;500;600&family=Noto+Sans+Khmer:wght@400;500;600&family=Noto+Sans+Tamil:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260919-1">
+  <link rel="stylesheet" href="styles.css?v=20260926-1">
 </head>
 <body data-access="checking">
   <header class="topbar">
@@ -59,6 +59,28 @@
       <h2 id="accessTitle">Checking teacher access…</h2>
       <p id="accessMessage">Google verifies your identity; the internal teacher list controls access to this workspace.</p>
       <strong id="accessEmail"></strong>
+    </section>
+
+    <section class="shared-curriculum teacher-workspace" id="sharedCurriculum" aria-labelledby="curriculumTitle">
+      <div class="section-heading">
+        <div><span class="step">公版</span><h2 id="curriculumTitle">公版課程 · Shared Curriculum</h2></div>
+        <span class="pilot-badge">V3 PILOT</span>
+      </div>
+      <p class="section-note">第一冊第1課 · 你好！—— 全體老師共用的唯讀教材。老師不能修改公版內容，但可 <strong>📋 複製到私人句庫</strong> 自行調整，或 <strong>⭐ 收藏</strong>、<strong>＋ 新增補充</strong>到自己的句庫。</p>
+      <div class="curriculum-lang-row">
+        <div class="lab-tabs" role="tablist" aria-label="Curriculum language">
+          <button class="lab-tab active" id="curLangHi" type="button" role="tab" aria-selected="true">印地文</button>
+          <button class="lab-tab" id="curLangEn" type="button" role="tab" aria-selected="false">English</button>
+        </div>
+        <span class="draft-note-inline" id="curDraftNote"></span>
+      </div>
+      <div class="curriculum-lesson">
+        <h3>第一冊第1課 · 你好！ <small>（94 句 · Pilot 只收錄印地文、英文）</small></h3>
+        <button class="secondary-button" id="curAddSupplement" type="button">＋ 為本課新增補充句子</button>
+      </div>
+      <div class="lab-tabs curriculum-tabs" id="curTabs" role="tablist" aria-label="Lesson sections"></div>
+      <div class="sentence-grid" id="curGrid" aria-live="polite"></div>
+      <div class="parse-message" id="curMessage" role="status" aria-live="polite"></div>
     </section>
 
     <section class="pronunciation-lab teacher-workspace" id="pronunciationLab" aria-labelledby="pronunciationTitle">
@@ -285,7 +307,8 @@
   </template>
 
   <script src="language-config.js?v=20260918-1"></script>
-  <script src="app.js?v=20260922-v3-10"></script>
+  <script src="pilot/pilot-curriculum-data.js?v=20260926-1"></script>
+  <script src="app.js?v=20260926-v3-11"></script>
   <script type="module" src="firebase-auth.js?v=20260919-4"></script>
   <script type="module" src="firebase-tts.js?v=20260919-1"></script>
   <script type="module" src="firebase-store.js?v=20260919-3"></script>
