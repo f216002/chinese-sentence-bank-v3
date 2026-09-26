@@ -533,6 +533,170 @@ async function submitTeacherAudio() {
   }
 }
 
+/* Pinyin quality check: every syllable must be a real Hanyu Pinyin syllable
+   and the tone mark must sit on the correct vowel (a > o > e > iu/ui). Ported from V2. */
+const PINYIN_BASE = new Set(('a ai an ang ao ba bai ban bang bao bei ben beng bi bian biao bie bin bing bo bu ca cai can cang cao ce cen ceng cha chai chan chang chao che chen cheng chi chong chou chu chua chuai chuan chuang chui chun chuo ci cong cou cu cuan cui cun cuo da dai dan dang dao de dei den deng di dia dian diao die ding diu dong dou du duan dui dun duo e ei en eng er fa fan fang fei fen feng fo fou fu ga gai gan gang gao ge gei gen geng gong gou gu gua guai guan guang gui gun guo ha hai han hang hao he hei hen heng hong hou hu hua huai huan huang hui hun huo ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun ka kai kan kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo la lai lan lang lao le lei leng li lia lian liang liao lie lin ling liu long lou lu luan lun luo lv lve ma mai man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu na nai nan nang nao ne nei nen neng ni nian niang niao nie nin ning niu nong nou nu nuan nuo nv nve o ou pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu qi qia qian qiang qiao qie qin qing qiong qiu qu quan que qun ran rang rao re ren reng ri rong rou ru rua ruan rui run ruo sa sai san sang sao se sen seng sha shai shan shang shao she shei shen sheng shi shou shu shua shuai shuan shuang shui shun shuo si song sou su suan sui sun suo ta tai tan tang tao te tei teng ti tian tiao tie ting tong tou tu tuan tui tun tuo wa wai wan wang wei wen weng wo wu xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun ya yan yang yao ye yi yin ying yo yong you yu yuan yue yun za zai zan zang zao ze zei zen zeng zha zhai zhan zhang zhao zhe zhei zhen zheng zhi zhong zhou zhu zhua zhuai zhuan zhuang zhui zhun zhuo zi zong zou zu zuan zui zun zuo').split(' '));
+const TONE_VOWELS = 'āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ';
+const TONE_TO_BASE = { 'ā':'a','á':'a','ǎ':'a','à':'a','ē':'e','é':'e','ě':'e','è':'e','ī':'i','í':'i','ǐ':'i','ì':'i','ō':'o','ó':'o','ǒ':'o','ò':'o','ū':'u','ú':'u','ǔ':'u','ù':'u','ǖ':'v','ǘ':'v','ǚ':'v','ǜ':'v' };
+function stripToneMarks(syllable) {
+  return syllable.toLowerCase().replace(/ü/g, 'v').replace(new RegExp('[' + TONE_VOWELS + ']', 'g'), ch => TONE_TO_BASE[ch] || ch);
+}
+function toneMarkPositionOk(syllable) {
+  const lower = syllable.toLowerCase();
+  let marked = -1;
+  for (let i = 0; i < lower.length; i += 1) {
+    if (TONE_VOWELS.includes(lower[i])) { marked = i; break; }
+  }
+  if (marked === -1) return true;
+  const base = stripToneMarks(syllable);
+  const markedVowel = stripToneMarks(syllable[marked]);
+  let expected;
+  if (base.includes('a')) expected = 'a';
+  else if (base.includes('o')) expected = 'o';
+  else if (base.includes('e')) expected = 'e';
+  else if (base.includes('iu')) expected = 'u';
+  else if (base.includes('ui')) expected = 'i';
+  else expected = markedVowel;
+  return markedVowel === expected;
+}
+function segmentPinyin(base) {
+  const memo = {};
+  function rec(i) {
+    if (i >= base.length) return [];
+    if (Object.prototype.hasOwnProperty.call(memo, i)) return memo[i];
+    for (let len = Math.min(6, base.length - i); len >= 1; len -= 1) {
+      const syl = base.slice(i, i + len);
+      const core = (syl.length > 2 && syl.endsWith('r') && !PINYIN_BASE.has(syl)) ? syl.slice(0, -1) : syl;
+      if (PINYIN_BASE.has(core)) {
+        const rest = rec(i + len);
+        if (rest) return (memo[i] = [syl].concat(rest));
+      }
+    }
+    return (memo[i] = null);
+  }
+  return rec(0);
+}
+function validatePinyin(pinyinText) {
+  const issues = [];
+  const tokens = String(pinyinText || '')
+    .split(/[\s'’]+/)
+    .map(t => t.replace(new RegExp('[^A-Za-z' + TONE_VOWELS + 'üÜ]', 'g'), ''))
+    .filter(Boolean);
+  tokens.forEach(token => {
+    const base = stripToneMarks(token).toLowerCase();
+    const syllables = segmentPinyin(base);
+    if (!syllables) { issues.push(`“${token}” is not valid pinyin`); return; }
+    let pos = 0;
+    syllables.forEach(syl => {
+      const original = token.slice(pos, pos + syl.length);
+      pos += syl.length;
+      if (!toneMarkPositionOk(original)) issues.push(`“${original}” has the tone mark on the wrong vowel`);
+    });
+  });
+  return issues;
+}
+
+let pendingEditSentence = null;
+
+function openEditDialog(sentence) {
+  if (!sentence.recordId) return;
+  pendingEditSentence = sentence;
+  const profile = getLanguageProfile(sourceLanguageFor(sentence));
+  $('editSourceLabel').textContent = `${profile.name} sentence`;
+  $('editRomanLabel').textContent = profile.romanizationName || 'Romanization';
+  $('editExplanationLabel').textContent = `${profile.name} explanation`;
+  $('editSource').value = sourceSentenceFor(sentence);
+  $('editChinese').value = sentence.chineseSentence || '';
+  $('editPinyin').value = sentence.pinyin || '';
+  $('editRoman').value = romanHindiFor(sentence);
+  $('editExplanation').value = sourceExplanationFor(sentence);
+  $('editCategory').value = sentence.category || 'Other';
+  $('editTags').value = sentence.tags || '';
+  $('editAiSource').value = sentence.aiSource || 'ChatGPT / Gemini';
+  const list = $('editCategoryList');
+  list.innerHTML = '';
+  (state.categories || []).forEach(c => {
+    const option = document.createElement('option');
+    option.value = c;
+    list.appendChild(option);
+  });
+  $('editRecordNote').textContent = `Editing record ${sentence.recordId}. Changes update this record in place; any teacher recording stays attached.`;
+  const hasAudio = !!(sentence.hasModelAudio || recordingForSentence(sentence));
+  $('editAudioNote').classList.toggle('hidden', !hasAudio);
+  $('editMessage').textContent = '';
+  $('confirmEdit').disabled = false;
+  $('confirmEdit').textContent = 'Save changes';
+  updateEditWarnings();
+  $('editDialog').showModal();
+  setTimeout(() => $('editSource').focus(), 50);
+}
+
+function updateEditWarnings() {
+  const box = $('editWarnings');
+  const warnings = [];
+  const pinyinText = $('editPinyin').value.trim();
+  const pinyinIssues = validatePinyin(pinyinText);
+  pinyinIssues.slice(0, 8).forEach(issue => warnings.push(`Pinyin: ${issue}.`));
+  if (pinyinIssues.length > 8) warnings.push(`…and ${pinyinIssues.length - 8} more pinyin issues.`);
+  if (pinyinText && !/^[A-ZĀÁǍÀĒÉĚÈĪÍǏÌŌÓǑÒŪÚǓÙǕǗǙǛ]/.test(pinyinText)) warnings.push('Pinyin: the first syllable usually starts with a capital letter.');
+  const chinese = $('editChinese').value.trim();
+  const source = $('editSource').value.trim();
+  const excludeId = pendingEditSentence ? pendingEditSentence.recordId : null;
+  if (chinese) {
+    const exactDupe = (state.sentences || []).find(s => s.recordId !== excludeId && (s.chineseSentence || '').trim() === chinese);
+    if (exactDupe) warnings.push(`This Chinese sentence already exists as another record${exactDupe.recordId ? ` (${exactDupe.recordId})` : ''}. Saving is blocked until you change it.`);
+  }
+  if (source) {
+    const sourceDupe = (state.sentences || []).find(s => s.recordId !== excludeId && sourceSentenceFor(s).trim() === source && (s.chineseSentence || '').trim() !== chinese);
+    if (sourceDupe) warnings.push(`The same source sentence already exists with a different Chinese translation${sourceDupe.recordId ? ` (${sourceDupe.recordId})` : ''}. Check which version is correct before saving.`);
+  }
+  if (!warnings.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.classList.remove('hidden');
+  box.innerHTML = '<strong>Please check before saving:</strong>';
+  const list = document.createElement('ul');
+  warnings.forEach(w => { const li = document.createElement('li'); li.textContent = w; list.appendChild(li); });
+  box.appendChild(list);
+}
+
+async function submitEdit() {
+  if (!pendingEditSentence) { $('editDialog').close(); return; }
+  const original = pendingEditSentence;
+  const edited = {
+    sourceSentence: $('editSource').value.trim(),
+    chineseSentence: $('editChinese').value.trim(),
+    pinyin: $('editPinyin').value.trim(),
+    romanization: $('editRoman').value.trim(),
+    explanation: $('editExplanation').value.trim(),
+    category: $('editCategory').value.trim() || 'Other',
+    tags: $('editTags').value.trim(),
+    aiSource: $('editAiSource').value.trim() || 'ChatGPT / Gemini'
+  };
+  const profile = getLanguageProfile(sourceLanguageFor(original));
+  const missing = [[profile.name, edited.sourceSentence], ['Chinese', edited.chineseSentence], ['Pinyin', edited.pinyin], ['Romanization', edited.romanization], ['Explanation', edited.explanation]]
+    .filter(([, value]) => !value).map(([label]) => label);
+  if (missing.length) { $('editMessage').textContent = `Please fill in: ${missing.join(', ')}.`; return; }
+  const exactDupe = (state.sentences || []).find(s => s.recordId !== original.recordId && (s.chineseSentence || '').trim() === edited.chineseSentence);
+  if (exactDupe) { $('editMessage').textContent = `Blocked: this Chinese sentence already exists as record ${exactDupe.recordId || 'another record'}.`; return; }
+
+  const button = $('confirmEdit');
+  button.disabled = true;
+  $('editMessage').textContent = 'Saving changes…';
+  try {
+    if (!window.MCSB_DB) throw new Error('The V3 database is not ready. Refresh and try again.');
+    await window.MCSB_DB.updateSentence(original.recordId, {
+      ...edited,
+      sourceLanguage: sourceLanguageFor(original),
+      originalPaste: original.originalPaste || ''
+    });
+    pendingEditSentence = null;
+    $('editMessage').textContent = 'Changes saved.';
+    setTimeout(() => $('editDialog').close(), 700);
+  } catch (error) {
+    button.disabled = false;
+    $('editMessage').textContent = `Save failed: ${(error && error.message) || 'Unknown error.'}`;
+  }
+}
+
 function openDeleteDialog(sentence) {
   if (!sentence.recordId) return;
   pendingDeleteSentence = sentence;
@@ -569,6 +733,11 @@ function createCard(sentence, preview = false) {
   const deleteButton = node.querySelector('.card-delete-button');
   deleteButton.hidden = preview;
   if (!preview) deleteButton.addEventListener('click', () => openDeleteDialog(sentence));
+  const editButton = node.querySelector('.card-edit-button');
+  if (editButton) {
+    editButton.hidden = preview;
+    if (!preview) editButton.addEventListener('click', () => openEditDialog(sentence));
+  }
   const sourceSentence = sourceSentenceFor(sentence);
   node.querySelector('.hindi').textContent = sourceSentence;
   const hindiSpeak = node.querySelector('.hindi-speak-button');
@@ -1142,6 +1311,7 @@ function receiveV3Bank(event) {
   renderFilters();
   renderSentences();
   updateV3SaveControls();
+  if (window.__refreshCurriculum) window.__refreshCurriculum();
 }
 
 function showV3BankError(event) {
@@ -1216,6 +1386,11 @@ $('confirmAudioSave').addEventListener('click', submitTeacherAudio);
 $('closeAudioPin').addEventListener('click', () => { pendingModelSave = null; $('audioPinDialog').close(); });
 $('confirmDelete').addEventListener('click', submitDeleteSentence);
 $('closeDelete').addEventListener('click', () => { pendingDeleteSentence = null; $('deleteDialog').close(); });
+$('confirmEdit').addEventListener('click', submitEdit);
+$('closeEdit').addEventListener('click', () => { pendingEditSentence = null; $('editDialog').close(); });
+['editSource', 'editChinese', 'editPinyin', 'editRoman', 'editExplanation'].forEach(id => {
+  $(id).addEventListener('input', updateEditWarnings);
+});
 let savedSourceLanguage = 'hi';
 try { savedSourceLanguage = localStorage.getItem('csbSourceLanguage') || 'hi'; } catch (_) {}
 $('sourceLanguage').value = LANGUAGE_PROFILES[savedSourceLanguage] ? savedSourceLanguage : 'hi';
@@ -1241,14 +1416,14 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
  * workflow applies. Audio reuses V3's tested TTS routing:
  *   Chinese -> speakChinese (browser zh-TW) · Hindi/English -> speakSourceLanguage
  *   (browser voices; ta/th/km/vi/ne/bn use Azure TTS via Cloud Function).
- */
-(function initSharedCurriculum(){
+ */(function initSharedCurriculum(){
   var section = $('sharedCurriculum');
   if (!section) return;
   var _raw = window.PILOT_CURRICULUM;
   var DATA = Array.isArray(_raw) ? _raw : ((_raw && _raw.records) || []);
-  var ORDER = ['目標', '課文', '生詞', '語法', '練習', '文化'];
-  var ICONS = { '目標': '🎯', '課文': '📖', '生詞': '📝', '語法': '📐', '練習': '✏️', '文化': '🌏' };
+  /* V2 parity: 課文/生詞/語法/練習/文化/補充 tabs; 目標 stays a tab in V3 (was header in V2). */
+  var ORDER = ['目標', '課文', '生詞', '語法', '練習', '文化', '補充'];
+  var ICONS = { '目標': '🎯', '課文': '📖', '生詞': '📝', '語法': '📐', '練習': '✏️', '文化': '🌏', '補充': '➕' };
   var LOCALES = { hi: 'hi-IN', en: 'en-US' };
   var LANG_LABEL = { hi: '印地文', en: 'English' };
   var LESSON_NAME = '第一冊第1課 你好！';
@@ -1257,12 +1432,24 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
   function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function tr(rec){ return rec[curLang] || rec.hi; }
   function msg(t){ var el = $('curMessage'); if (el) el.textContent = t || ''; }
+  function tagList(rec){ return String(rec.tags || '').split(',').map(function(t){ return t.trim(); }).filter(Boolean); }
+
+  /* ---- Teacher's own supplementary sentences for this lesson (private bank) ---- */
+  function supplementRecs(){
+    var all = (typeof state !== 'undefined' && state.sentences) || [];
+    return all.filter(function(s){
+      var tags = String(s.tags || '');
+      return tags.indexOf(LESSON_NAME) >= 0 && tags.indexOf('補充') >= 0;
+    });
+  }
 
   function renderTabs(){
     var tabs = $('curTabs'); tabs.innerHTML = '';
     ORDER.forEach(function(key){
-      var n = DATA.filter(function(r){ return r.section === key; }).length;
-      if (!n) return;
+      var n = (key === '補充')
+        ? supplementRecs().length
+        : DATA.filter(function(r){ return r.section === key; }).length;
+      if (!n && key !== '補充') return; /* 補充分頁永遠顯示 */
       var b = document.createElement('button');
       b.type = 'button';
       b.className = 'lab-tab' + (key === curSection ? ' active' : '');
@@ -1303,12 +1490,168 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
     return node;
   }
 
+  /* ---- 課文： group by dialogue, with 連播 (play-all) ---- */
+  var TEXT_ORDER = ['對話一', '對話二', '對話三', '對話', '短文', '課文'];
+  function textGroupName(rec){
+    var tags = tagList(rec);
+    for (var i = 0; i < TEXT_ORDER.length; i++) if (tags.indexOf(TEXT_ORDER[i]) >= 0) return TEXT_ORDER[i];
+    return '課文';
+  }
+  var groupPlayState = null;
+  function stopGroupPlay(){
+    try { speechSynthesis.cancel(); } catch (_){}
+    if (groupPlayState && groupPlayState.btn){
+      groupPlayState.btn.classList.remove('text-playing');
+      groupPlayState.btn.textContent = '▶ 連播';
+    }
+    groupPlayState = null;
+  }
+  async function playGroup(recs, btn){
+    if (groupPlayState){ stopGroupPlay(); return; }
+    if (!('speechSynthesis' in window)){ msg('此瀏覽器不支援語音播放。'); return; }
+    var voices = await waitForVoices();
+    var voice = exactVoiceFor(voices, 'zh-TW');
+    if (!voice){ msg('找不到台灣國語（zh-TW）語音。'); return; }
+    groupPlayState = { recs: recs.slice(), i: 0, btn: btn, voice: voice };
+    btn.classList.add('text-playing');
+    btn.textContent = '⏹ 停止';
+    playNextGroupLine();
+  }
+  function playNextGroupLine(){
+    var st = groupPlayState;
+    if (!st) return;
+    if (st.i >= st.recs.length){ stopGroupPlay(); return; }
+    var line = st.recs[st.i]; st.i += 1;
+    try {
+      var u = new SpeechSynthesisUtterance(line.zh || '');
+      u.lang = 'zh-TW'; u.voice = st.voice;
+      u.rate = (typeof state !== 'undefined' && Number(state.settings.speechRate)) || 0.85;
+      u.onend = u.onerror = function(){ playNextGroupLine(); };
+      speechSynthesis.speak(u);
+    } catch (_){ playNextGroupLine(); }
+  }
+  function renderTextGroups(grid, recs){
+    var groups = {};
+    recs.forEach(function(r){
+      var g = textGroupName(r);
+      (groups[g] = groups[g] || []).push(r);
+    });
+    TEXT_ORDER.filter(function(g){ return groups[g]; }).forEach(function(g){
+      var lines = groups[g];
+      var head = document.createElement('div');
+      head.className = 'text-group-head';
+      var title = document.createElement('h4');
+      title.className = 'text-group-head-title';
+      title.textContent = g + '（' + lines.length + '）';
+      var playBtn = document.createElement('button');
+      playBtn.type = 'button';
+      playBtn.className = 'secondary-button text-play-button';
+      playBtn.textContent = '▶ 連播';
+      playBtn.setAttribute('aria-label', '連播' + g);
+      playBtn.addEventListener('click', function(){ playGroup(lines, playBtn); });
+      head.appendChild(title); head.appendChild(playBtn);
+      grid.appendChild(head);
+      lines.forEach(function(rec){ grid.appendChild(cardNode(rec)); });
+    });
+  }
+
+  /* ---- 生詞： group by 生詞一 / 生詞二 ---- */
+  var VOCAB_ORDER = ['生詞一', '生詞二', '生詞'];
+  function vocabGroupName(rec){
+    var tags = tagList(rec);
+    for (var i = 0; i < VOCAB_ORDER.length; i++) if (tags.indexOf(VOCAB_ORDER[i]) >= 0) return VOCAB_ORDER[i];
+    return '生詞';
+  }
+  function renderVocabGroups(grid, recs){
+    var groups = {};
+    recs.forEach(function(r){
+      var g = vocabGroupName(r);
+      (groups[g] = groups[g] || []).push(r);
+    });
+    VOCAB_ORDER.filter(function(g){ return groups[g]; }).forEach(function(g){
+      var h = document.createElement('h4');
+      h.className = 'text-group-head-title';
+      h.textContent = g + '（' + groups[g].length + '）';
+      grid.appendChild(h);
+      groups[g].forEach(function(rec){ grid.appendChild(cardNode(rec)); });
+    });
+  }
+
+  /* ---- 語法： group by grammar point, 句型 as pattern header ---- */
+  function grammarKey(rec){
+    var tags = tagList(rec);
+    for (var i = 0; i < tags.length; i++){
+      if (/^L\d+-G\d+$/i.test(tags[i])) return tags[i].toUpperCase();
+    }
+    return '其他';
+  }
+  function renderGrammarGroups(grid, recs){
+    var groups = {};
+    recs.forEach(function(r){
+      var k = grammarKey(r);
+      (groups[k] = groups[k] || []).push(r);
+    });
+    Object.keys(groups).sort(function(a, b){
+      var na = parseInt((a.match(/G(\d+)/) || [0, 999])[1], 10);
+      var nb = parseInt((b.match(/G(\d+)/) || [0, 999])[1], 10);
+      return na - nb;
+    }).forEach(function(k){
+      var items = groups[k];
+      var point = null;
+      for (var i = 0; i < items.length; i++){
+        if (tagList(items[i]).indexOf('句型') >= 0){ point = items[i]; break; }
+      }
+      if (!point) point = items[0];
+      var examples = items.filter(function(r){ return r !== point; });
+      var t = tr(point);
+      var block = document.createElement('div');
+      block.className = 'grammar-block';
+      block.innerHTML =
+          '<div class="grammar-pattern" lang="zh-TW">' + esc(point.zh) + '</div>'
+        + (point.pinyin ? '<div class="grammar-pinyin">' + esc(point.pinyin) + '</div>' : '')
+        + '<div class="grammar-source">' + esc(t.source) + '</div>'
+        + (t.explanation ? '<div class="grammar-function">' + esc(t.explanation) + '</div>' : '');
+      grid.appendChild(block);
+      examples.forEach(function(rec){ grid.appendChild(cardNode(rec)); });
+    });
+  }
+
+  /* ---- 補充： teacher's own supplements for this lesson ---- */
+  function renderSupp(grid){
+    var bar = document.createElement('div');
+    bar.className = 'supp-bar';
+    bar.innerHTML =
+        '<p class="supp-hint">老師針對本課補充的句子：課堂上臨時加的例句、學生問到的句子，都可以記在這裡，跟著本課走。按右方按鈕前往上方的 AI 新增流程，完成後句子會自動歸入本課「補充」（存入你的私人句庫，公版內容不會被改動）。</p>'
+      + '<button class="secondary-button" type="button">＋ 新增補充句子</button>';
+    bar.querySelector('button').addEventListener('click', startSupplement);
+    grid.appendChild(bar);
+    var recs = supplementRecs();
+    if (!recs.length){
+      var empty = document.createElement('div');
+      empty.className = 'loading-card';
+      var approved = (window.MCSB_ACCESS && window.MCSB_ACCESS.status === 'approved');
+      empty.textContent = approved
+        ? '還沒有補充內容，按上面按鈕新增第一句。'
+        : '登入並通過老師審核後，你為本課新增的補充句子會顯示在這裡。';
+      grid.appendChild(empty);
+      return;
+    }
+    recs.forEach(function(s){ grid.appendChild(createCard(s)); });
+  }
+
   function render(){
+    stopGroupPlay();
     renderTabs();
     var grid = $('curGrid'); grid.innerHTML = '';
-    DATA.filter(function(r){ return r.section === curSection; }).forEach(function(rec){
-      grid.appendChild(cardNode(rec));
-    });
+    if (curSection === '補充'){
+      renderSupp(grid);
+    } else {
+      var recs = DATA.filter(function(r){ return r.section === curSection; });
+      if (curSection === '課文') renderTextGroups(grid, recs);
+      else if (curSection === '生詞') renderVocabGroups(grid, recs);
+      else if (curSection === '語法') renderGrammarGroups(grid, recs);
+      else recs.forEach(function(rec){ grid.appendChild(cardNode(rec)); });
+    }
     $('curDraftNote').textContent = curLang === 'en'
       ? 'English: AI draft — pending teacher review（AI 初稿，待老師校對）'
       : '印地文：V2 reviewed baseline';
@@ -1379,7 +1722,14 @@ window.addEventListener('mcsb-bank-error', showV3BankError);
   }
   render();
 
+  /* Refresh the 補充 tab count/content when the personal bank finishes loading. */
+  window.__refreshCurriculum = function(){
+    renderTabs();
+    if (curSection === '補充') render();
+  };
+
   if (location.hash === '#sharedCurriculum'){
     setTimeout(function(){ section.scrollIntoView(); }, 900);
   }
 })();
+
