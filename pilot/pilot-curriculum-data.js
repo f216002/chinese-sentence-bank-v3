@@ -25,7 +25,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "Learning objectives: 1. Learn simple greetings. 2. Learn simple ways to introduce others. 3. Learn simple ways to talk about likes and dislikes. 4. Learn simple ways to express thanks.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 目標"
  },
  {
   "id": "B1-L01-002",
@@ -48,7 +49,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "請問 (qǐngwèn, \"excuse me\") is a polite way to open a question with a stranger. 你是 (nǐ shì, \"are you\") + 陳月美小姐 (Chén Yuěměi xiǎojie, \"Miss Chen Yuemei\") + 嗎 (ma) — 嗎 turns the sentence into a yes/no question.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-003",
@@ -71,7 +73,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "是的 (shì de, \"yes\") is an affirmative answer. 謝謝你 (xièxie nǐ, \"thank you\") + 來接我們 (lái jiē wǒmen, \"coming to pick us up\") — 接 (jiē, \"to pick up, to meet\") + 我們 (wǒmen, \"us\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-004",
@@ -94,7 +97,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "不客氣 (bú kèqi, \"you're welcome\") is the reply to thanks. 我是 (wǒ shì, \"I am\") + 李明華 — the standard self-introduction pattern: 我是 + name.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-005",
@@ -117,7 +121,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "這是 (zhè shì, \"this is\") + 王先生 (Wáng xiānsheng, \"Mr. Wang\") — the pattern for introducing someone else: 這是 + name/title.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-006",
@@ -140,7 +145,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "你好 (nǐ hǎo, \"hello\"). 姓 (xìng, \"to have the surname\") + 王; 叫 (jiào, \"to be called\") + 開文 — the full Chinese introduction pattern: 我姓 X，叫 Y (\"My surname is X, my name is Y\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-007",
@@ -163,7 +169,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "你們 (nǐmen, \"you all\") is the plural form of address. 歡迎 (huānyíng, \"welcome\") + 你們來臺灣 (\"your coming to Taiwan\") — a formal sentence for welcoming guests.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話一"
  },
  {
   "id": "B1-L01-008",
@@ -186,7 +193,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "請 (qǐng, \"please\") here makes a polite invitation — 請喝茶 means \"please have some tea.\" 喝 (hē, \"to drink\") is the verb, 茶 (chá, \"tea\") the noun. 請 + verb is the common pattern for inviting someone to eat or drink.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-009",
@@ -209,7 +217,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "After 謝謝 (xièxie, \"thanks\"), 好喝 (hǎohē, \"tasty (of drinks)\") is a compliment — 很 (hěn) adds the \"very\" feeling here. 請問 (qǐngwèn, \"excuse me / may I ask\") politely opens a question. 什麼 (shénme, \"what\") is the question word; in Chinese it stays where the answer would go.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-010",
@@ -232,7 +241,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "烏龍茶 (Wūlóng chá) is Taiwan's famous tea. After 喜歡 (xǐhuan, \"to like\") comes a verb — 喜歡喝茶 means \"to like drinking tea.\" 你們 (nǐmen, \"you people\") + 日本人 (Rìběn rén, \"Japanese people\") followed by 呢 (ne) — a short tag question meaning \"how about...?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-011",
@@ -255,7 +265,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the \"不 + verb\" negative pattern — 不是 (bú shì) means \"is not.\" Note: 不 (bù) is pronounced in the second tone (bú) before a fourth-tone 是 (shì). 他 (tā, \"he\") refers to Kaiwen here.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-012",
@@ -278,7 +289,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "對不起 (duìbuqǐ, \"sorry\") here apologizes for the misunderstanding. 哪國 (nǎ guó, \"which country\") + 人 (rén, \"person\") = 哪國人 (\"a person of which country\"). The standard pattern for asking nationality: 你是哪國人?",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-013",
@@ -301,7 +313,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "是 (shì, \"am/is/are\") identifies — 我是美國人 means \"I am American.\" Nationality is formed with country name + 人, e.g. 台灣人 (Taiwanese), 日本人 (Japanese), 美國人 (American). Remember the pattern: 我是 + country + 人.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-014",
@@ -324,7 +337,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the \"A-not-A question\" pattern — 要不要 (yào bú yào, \"want or not\") + 喝咖啡 (hē kāfēi, \"to drink coffee\"). 要不要…? is the most natural pattern for offering something. Note: no 嗎 at the end of an A-not-A question.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-015",
@@ -347,7 +361,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "When declining an offer, starting with 謝謝 (xièxie, \"thanks\") is polite. In 我不喝咖啡, 不 (bù) + 喝 (hē) is the negation — 不 always comes before the verb. Then 喜歡喝茶 (xǐhuan hē chá, \"like drinking tea\") states the preference. The natural order: thanks first, then no, then your preference.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 課文, 對話二"
  },
  {
   "id": "B1-L01-016",
@@ -370,7 +385,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 李明華是臺灣人。 (Lǐ Mínghuá shì Táiwān rén. — Li Minghua is Taiwanese.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 人名地名"
  },
  {
   "id": "B1-L01-017",
@@ -393,7 +409,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 陳月美是臺灣人。 (Chén Yuěměi shì Táiwān rén. — Chen Yuemei is Taiwanese.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 人名地名"
  },
  {
   "id": "B1-L01-018",
@@ -416,7 +433,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 王開文是美國人。 (Wáng Kāiwén shì Měiguó rén. — Wang Kaiwen is American.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 人名地名"
  },
  {
   "id": "B1-L01-019",
@@ -439,7 +457,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 請問你是陳月美小姐嗎？ (Qǐngwèn nǐ shì Chén Yuěměi xiǎojie ma? — Excuse me, are you Miss Chen Yuemei?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-020",
@@ -462,7 +481,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 謝謝你來接我們。 (Xièxie nǐ lái jiē wǒmen. — Thank you for coming to pick us up.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-021",
@@ -485,7 +505,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我是李明華。 (Wǒ shì Lǐ Mínghuá. — I am Li Minghua.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-022",
@@ -508,7 +529,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 陳月美小姐。 (Chén Yuěměi xiǎojie. — Miss Chen Yuemei.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-023",
@@ -531,7 +553,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你是陳月美小姐嗎？ (Nǐ shì Chén Yuěměi xiǎojie ma? — Are you Miss Chen Yuemei?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-024",
@@ -554,7 +577,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 謝謝你來接我們。 (Xièxie nǐ lái jiē wǒmen. — Thank you for coming to pick us up.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-025",
@@ -577,7 +601,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 謝謝你來接我們。 (Xièxie nǐ lái jiē wǒmen. — Thank you for coming to pick us up.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-026",
@@ -600,7 +625,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我是李明華。 (Wǒ shì Lǐ Mínghuá. — I am Li Minghua.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-027",
@@ -623,7 +649,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 這是王先生。 (Zhè shì Wáng xiānsheng. — This is Mr. Wang.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-028",
@@ -646,7 +673,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 這是王先生。 (Zhè shì Wáng xiānsheng. — This is Mr. Wang.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-029",
@@ -669,7 +697,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你們好。 (Nǐmen hǎo. — Hello, everyone.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-030",
@@ -692,7 +721,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我姓王。 (Wǒ xìng Wáng. — My surname is Wang.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-031",
@@ -715,7 +745,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: (我)叫開文。 ((Wǒ) jiào Kāiwén. — (I am) called Kaiwen.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-032",
@@ -738,7 +769,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 歡迎你們來臺灣。 (Huānyíng nǐmen lái Táiwān. — Welcome to Taiwan.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一"
  },
  {
   "id": "B1-L01-033",
@@ -761,7 +793,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 歡迎你們來臺灣。 (Huānyíng nǐmen lái Táiwān. — Welcome to Taiwan.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 人名地名"
  },
  {
   "id": "B1-L01-034",
@@ -784,7 +817,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 歡迎你來臺灣！ (Huānyíng nǐ lái Táiwān! — Welcome to Taiwan!)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-035",
@@ -807,7 +841,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 請問這是什麼茶？ (Qǐngwèn zhè shì shénme chá? — May I ask what tea this is?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-036",
@@ -830,7 +865,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你是美國人嗎？是的，我是美國人。 (Nǐ shì Měiguó rén ma? Shìde, wǒ shì Měiguó rén. — Are you American? Yes, I am American.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-037",
@@ -853,7 +889,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 謝謝你。 (Xièxie nǐ. — Thank you.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-038",
@@ -876,7 +913,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 謝謝！—不客氣。 (Xièxie! — Bú kèqi. — Thanks! — You're welcome.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-039",
@@ -899,7 +937,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你好嗎？我很好。 (Nǐ hǎo ma? Wǒ hěn hǎo. — How are you? I'm fine.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞一, 短語"
  },
  {
   "id": "B1-L01-040",
@@ -922,7 +961,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 請喝茶。 (Qǐng hē chá. — Please have some tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-041",
@@ -945,7 +985,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你要不要喝咖啡？ (Nǐ yào bú yào hē kāfēi? — Would you like some coffee?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-042",
@@ -968,7 +1009,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 請喝茶。 (Qǐng hē chá. — Please have some tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-043",
@@ -991,7 +1033,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我很好。 (Wǒ hěn hǎo. — I'm fine.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-044",
@@ -1014,7 +1057,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 烏龍茶很好喝。 (Wūlóng chá hěn hǎohē. — Oolong tea is delicious.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-045",
@@ -1037,7 +1081,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 請問這是什麼茶？ (Qǐngwèn zhè shì shénme chá? — May I ask what tea this is?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-046",
@@ -1060,7 +1105,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 臺灣人喜歡喝茶。 (Táiwān rén xǐhuan hē chá. — Taiwanese people like drinking tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-047",
@@ -1083,7 +1129,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我喜歡喝茶。 (Wǒ xǐhuan hē chá. — I like drinking tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-048",
@@ -1106,7 +1153,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你們日本人呢？ (Nǐmen Rìběn rén ne? — How about you Japanese?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-049",
@@ -1129,7 +1177,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 他不是日本人。 (Tā bú shì Rìběn rén. — He is not Japanese.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-050",
@@ -1152,7 +1201,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我不喝咖啡。 (Wǒ bù hē kāfēi. — I don't drink coffee.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-051",
@@ -1175,7 +1225,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你是哪國人？ (Nǐ shì nǎ guó rén? — Which country are you from?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-052",
@@ -1198,7 +1249,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你要不要喝咖啡？ (Nǐ yào bú yào hē kāfēi? — Would you like some coffee?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-053",
@@ -1221,7 +1273,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我不喝咖啡。 (Wǒ bù hē kāfēi. — I don't drink coffee.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二"
  },
  {
   "id": "B1-L01-054",
@@ -1244,7 +1297,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 這是烏龍茶。 (Zhè shì Wūlóng chá. — This is oolong tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二, 人名地名"
  },
  {
   "id": "B1-L01-055",
@@ -1267,7 +1321,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 他不是日本人。 (Tā bú shì Rìběn rén. — He is not Japanese.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二, 人名地名"
  },
  {
   "id": "B1-L01-056",
@@ -1290,7 +1345,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 我是美國人。 (Wǒ shì Měiguó rén. — I am American.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二, 人名地名"
  },
  {
   "id": "B1-L01-057",
@@ -1313,7 +1369,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 對不起，你是哪國人？ (Duìbuqǐ, nǐ shì nǎ guó rén? — Sorry, which country are you from?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二, 短語"
  },
  {
   "id": "B1-L01-058",
@@ -1336,7 +1393,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "E.g.: 你是哪國人？ (Nǐ shì nǎ guó rén? — Which country are you from?)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 生詞, 生詞二, 短語"
  },
  {
   "id": "B1-L01-059",
@@ -1359,7 +1417,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G1 \"A-not-A questions\" — a yes/no question is formed by repeating the verb or verb phrase as affirmative + 不 + affirmative. It is the most neutral way to ask a question in Chinese. 要不要 (yào bú yào, \"want or not\") + 喝咖啡 (hē kāfēi, \"to drink coffee\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1"
  },
  {
   "id": "B1-L01-060",
@@ -1382,7 +1441,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G1 A-not-A — 是不是 (shì bú shì, \"is or isn't\") + 烏龍茶. 是 (shì) is the identifying verb here, so the question means \"Is this oolong tea or not?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1, 句型"
  },
  {
   "id": "B1-L01-061",
@@ -1405,7 +1465,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G1 A-not-A — 喜歡 (xǐhuan, \"to like\") has two syllables, so the whole word is repeated: 喜歡不喜歡. The question means \"Do Taiwanese people like drinking tea or not?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1, 句型"
  },
  {
   "id": "B1-L01-062",
@@ -1428,7 +1489,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G1 A-not-A — 要不要…? is the most natural pattern when offering something. 你們 (nǐmen, \"you all\") is the plural subject.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1, 句型"
  },
  {
   "id": "B1-L01-063",
@@ -1451,7 +1513,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G1 A-not-A — 來不來 (lái bù lái, \"coming or not\") + 臺灣 (place). The one-syllable verb 來 is repeated directly.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1, 句型"
  },
  {
   "id": "B1-L01-064",
@@ -1474,7 +1537,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "A special rule of G1 A-not-A — when the verb has two syllables (XY), the second syllable may be dropped in the first \"A\": 喜不喜歡 = 喜歡不喜歡; both are correct, meaning \"like or not?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G1, 句型"
  },
  {
   "id": "B1-L01-065",
@@ -1497,7 +1561,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G2 \"嗎 (ma) questions\" — a question is formed by adding the question particle 嗎 (ma) at the end of a sentence: SENTENCE + 嗎?. It is usually used for short questions. 你好 (nǐ hǎo) + 嗎 makes \"How are you?\" The sentence in a 嗎 question can be affirmative or negative.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2"
  },
  {
   "id": "B1-L01-066",
@@ -1520,7 +1585,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G2 嗎 questions — 是日本人 (an identifying sentence) + 嗎 = \"Is he Japanese?\" The A-not-A form would be 他是不是日本人? — both mean the same.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2, 句型"
  },
  {
   "id": "B1-L01-067",
@@ -1543,7 +1609,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G2 嗎 questions — 你來接我們 + 嗎. 嗎 is the most common way to ask a short, direct question.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2, 句型"
  },
  {
   "id": "B1-L01-068",
@@ -1566,7 +1633,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G2 嗎 questions — 你要喝茶 + 嗎. The A-not-A form would be 你要不要喝茶? — same meaning.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2, 句型"
  },
  {
   "id": "B1-L01-069",
@@ -1589,7 +1657,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "A negative example of G2 嗎 questions — the sentence in a 嗎 question can also be negative: 他不姓陳 + 嗎 = \"Isn't his surname Chen?\" — i.e. asking to confirm \"Is his surname Chen?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2, 句型"
  },
  {
   "id": "B1-L01-070",
@@ -1612,7 +1681,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "A negative example of G2 嗎 questions — 不喝咖啡 (\"doesn't drink coffee\") + 嗎. It means \"Doesn't he drink coffee?\" — the speaker thinks he probably does and wants confirmation.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G2, 句型"
  },
  {
   "id": "B1-L01-071",
@@ -1635,7 +1705,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G3 \"affirmative answers\" — say yes by repeating the main verb of the question: 是 (shì) is repeated, then the full affirmative sentence 他是臺灣人. The question was 他是不是臺灣人? / 他是臺灣人嗎? — both get this answer.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G3"
  },
  {
   "id": "B1-L01-072",
@@ -1658,7 +1729,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G3 affirmative answers — the main verb 喜歡 of the question 你喜不喜歡臺灣? is repeated: 喜歡，我喜歡臺灣 (\"Yes, I like Taiwan\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G3, 句型"
  },
  {
   "id": "B1-L01-073",
@@ -1681,7 +1753,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G3 affirmative answers — the verb 是 of the question 王先生是不是日本人? is repeated.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G3, 句型"
  },
  {
   "id": "B1-L01-074",
@@ -1704,7 +1777,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G3 affirmative answers — the verb 喝 of the question 他喝不喝烏龍茶? is repeated: 喝，他喝烏龍茶.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G3, 句型"
  },
  {
   "id": "B1-L01-075",
@@ -1727,7 +1801,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "The shortest form of G3 — in Chinese you can say yes by repeating just the verb of the question: 你是王先生嗎? → 是. / 他來不來臺灣? → 來. / 他喜歡不喜歡喝茶? → 喜歡.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G3, 句型"
  },
  {
   "id": "B1-L01-076",
@@ -1750,7 +1825,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G4 \"不 (bù) negative answers\" — say no by repeating the main verb of the question as 不 + verb: 不是 (bú shì, \"is not\"), then the full negative sentence 他不是李先生. The question was 他是不是李先生?. 不 (bù) is an adverb and always comes before the verb.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G4"
  },
  {
   "id": "B1-L01-077",
@@ -1773,7 +1849,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G4 negative answers — the answer to 王先生喝茶嗎? is 不 (no), then 不喝 (\"doesn't drink\"). The verb 喝 is repeated with 不.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G4, 句型"
  },
  {
   "id": "B1-L01-078",
@@ -1796,7 +1873,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G4 negative answers — the answer to 李小姐是不是臺灣人? is 不是，李小姐不是臺灣人.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G4, 句型"
  },
  {
   "id": "B1-L01-079",
@@ -1819,7 +1897,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "The shortest form of G4 — you can say no with just 不 + verb: 他要不要喝咖啡? → 不要. / 你喜歡不喜歡喝烏龍茶? → 不喜歡. / 陳小姐是不是美國人? → 不是. Exception: for questions with 姓 (xìng, \"to have the surname\") and 叫 (jiào, \"to be called\"), say only 不姓 / 不叫, e.g. 他姓李嗎? → 不姓李.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G4, 句型"
  },
  {
   "id": "B1-L01-080",
@@ -1842,7 +1921,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G5 \"很 (hěn) modifiers\" — 很 (hěn) is an adverb that comes before a stative verb (like 好, 喜歡): subject + 很 + stative verb. 我很好 means \"I'm fine.\" Rule: in Chinese, a stative verb needs 不 or an intensity word before it — when there is no special emphasis, 很 fills that grammatical slot.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G5"
  },
  {
   "id": "B1-L01-081",
@@ -1865,7 +1945,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G5 很 + stative verb — 很 (hěn) + 喜歡 (xǐhuan, stative verb \"to like\"). Here 很 only satisfies the grammar; it does not add real emphasis — to really mean \"very,\" stress 很 when speaking.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G5, 句型"
  },
  {
   "id": "B1-L01-082",
@@ -1888,7 +1969,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G5 很 + stative verb — 喜歡 is a stative verb, so 很 comes before it: 很喜歡喝烏龍茶 (\"like drinking oolong tea\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G5, 句型"
  },
  {
   "id": "B1-L01-083",
@@ -1911,7 +1993,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G5 很 + stative verb — 好喝 (hǎohē, \"tasty\") is a stative verb describing the tea, so 很 is required: 烏龍茶很好喝.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G5, 句型"
  },
  {
   "id": "B1-L01-084",
@@ -1934,7 +2017,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "More examples of G5 很 + stative verb — in 我們很好, 好 is the stative verb; in 他很喜歡日本人, 喜歡 is the stative verb. 很 is required in both.",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G5, 句型"
  },
  {
   "id": "B1-L01-085",
@@ -1957,7 +2041,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "This is the main pattern of G6 \"呢 (ne) contrastive questions\" — a 呢 question is a short tag question that follows a statement. Two types: (1) same verb, different subject: S1 V O, S2 呢? — 我要喝茶，你呢? (\"I want some tea — how about you?\"); (2) same subject, different object: S V O1, O2 呢? — 你喜歡喝茶，咖啡呢? (\"You like drinking tea — how about coffee?\").",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G6"
  },
  {
   "id": "B1-L01-086",
@@ -1980,7 +2065,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G6 呢 questions — same verb phrase (不喝咖啡), different subject (他 → 陳小姐): \"He doesn't drink coffee — how about Miss Chen?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G6, 句型"
  },
  {
   "id": "B1-L01-087",
@@ -2003,7 +2089,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G6 呢 questions — same predicate (是美國人), different subject (他 → 你): \"He's American — how about you (which country are you from)?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G6, 句型"
  },
  {
   "id": "B1-L01-088",
@@ -2026,7 +2113,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G6 呢 questions — same subject (你), different object (喝茶 → 咖啡): \"You like drinking tea — how about coffee?\" — i.e. \"Do you like coffee too?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G6, 句型"
  },
  {
   "id": "B1-L01-089",
@@ -2049,7 +2137,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "An example of G6 呢 questions — same subject (他), different object (咖啡 → 茶): \"He doesn't drink coffee — how about tea?\" — i.e. \"Does he drink tea?\"",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 語法, L101-G6, 句型"
  },
  {
   "id": "B1-L01-090",
@@ -2072,7 +2161,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "Activity: work in pairs — greet each other, introduce yourself, then ask the other person's name and which country they're from, and introduce him/her to the whole class. E.g.: A: 你好！我是開文，你叫什麼名字？ (Nǐ hǎo! Wǒ shì Kāiwén, nǐ jiào shénme míngzi? — Hi! I'm Kaiwen, what's your name?) B: 我叫陳月美，我是臺灣人。 (Wǒ jiào Chén Yuěměi, wǒ shì Táiwān rén. — I'm Chen Yuemei, I'm Taiwanese.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 練習"
  },
  {
   "id": "B1-L01-091",
@@ -2095,7 +2185,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "Activity: use the A-not-A pattern 「喜歡不喜歡」 to ask classmates whether they like tea or coffee. If they like it, offer them a cup; if not, offer something else. E.g.: A: 你喜歡不喜歡喝茶？ (Nǐ xǐ bu xǐhuan hē chá? — Do you like drinking tea?) B: 喜歡，我喜歡喝茶。 (Xǐhuan, wǒ xǐhuan hē chá. — Yes, I like drinking tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 練習"
  },
  {
   "id": "B1-L01-092",
@@ -2118,7 +2209,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "Activity: practice dialogues in pairs. A: 你要不要…? (Nǐ yào bú yào…? — Would you like…?) B: 好的／不要，謝謝。 (Hǎo de / bú yào, xièxie. — OK / No, thanks.) E.g.: A: 你要不要喝咖啡？ (Nǐ yào bú yào hē kāfēi? — Would you like some coffee?) B: 不要，謝謝。 (Bú yào, xièxie. — No, thanks.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 練習"
  },
  {
   "id": "B1-L01-093",
@@ -2141,7 +2233,8 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "Activity: look at the pictures, make sentences, then ask classmates with 「呢」 questions. E.g.: A: 他喜歡喝茶，咖啡呢？ (Tā xǐhuan hē chá, kāfēi ne? — He likes drinking tea — how about coffee?) B: 他不喜歡喝咖啡，他喜歡喝茶。 (Tā bù xǐhuan hē kāfēi, tā xǐhuan hē chá. — He doesn't like coffee; he likes tea.)",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 練習"
  },
  {
   "id": "B1-L01-094",
@@ -2164,6 +2257,7 @@ window.PILOT_CURRICULUM = [
    "roman": "",
    "explanation": "In Taiwan, 「來喝茶！\" (\"Come have some tea!\") is as common as \"Come over for coffee sometime\" in English. When friends have free time, they gather around a tea set, sipping from small, delicate cups, chatting about the tea's aroma and flavor — drinking tea while chatting is Chinese people's favorite way to bond and catch up. At home, in offices, under old trees in parks, or by temples, you can see people drinking tea — tea is part of everyday Taiwanese life. Chinese nicknames: people are used to adding 老 (lǎo, \"old\") before the surname or 小 (xiǎo, \"little\") before the second character of the given name for close friends and family; influenced by Taiwanese Hokkien, nicknames in Taiwan often add 阿 (ā) before the name or repeat the second character of the given name — e.g. 陳文華 (Chén Wénhuá) can be called 老陳 (Lǎo Chén), 小陳 (Xiǎo Chén), 小華 (Xiǎo Huá), 華華 (Huáhuá), or 阿華 (Ā Huá).",
    "status": "draft"
-  }
+  },
+  "tags": "第一冊第1課, 文化"
  }
 ];
