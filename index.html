@@ -286,11 +286,35 @@
     <div class="parse-message" id="deleteMessage" role="status" aria-live="polite"></div>
   </dialog>
 
+  <dialog id="editDialog">
+    <button class="dialog-close" id="closeEdit" aria-label="Close edit window">×</button>
+    <span class="step edit-step">EDIT SENTENCE</span>
+    <h2>Edit sentence</h2>
+    <p class="edit-note" id="editRecordNote"></p>
+    <p class="edit-audio-note hidden" id="editAudioNote">This sentence has a saved teacher recording. It stays attached after editing.</p>
+    <div class="edit-fields">
+      <label class="edit-field"><span id="editSourceLabel">Source sentence</span><textarea id="editSource" rows="2"></textarea></label>
+      <label class="edit-field">Chinese sentence<input id="editChinese" lang="zh-Hant" autocomplete="off"></label>
+      <label class="edit-field">Pinyin<input id="editPinyin" autocomplete="off"></label>
+      <label class="edit-field"><span id="editRomanLabel">Romanization</span><input id="editRoman" autocomplete="off"></label>
+      <label class="edit-field"><span id="editExplanationLabel">Explanation</span><textarea id="editExplanation" rows="2"></textarea></label>
+      <div class="edit-row">
+        <label class="edit-field">Category<input id="editCategory" list="editCategoryList" autocomplete="off"></label>
+        <label class="edit-field">Tags<input id="editTags" autocomplete="off" placeholder="comma, separated"></label>
+      </div>
+      <label class="edit-field">AI source<input id="editAiSource" autocomplete="off"></label>
+    </div>
+    <datalist id="editCategoryList"></datalist>
+    <div class="preview-warnings hidden" id="editWarnings" role="status"></div>
+    <button class="primary-button full-button" id="confirmEdit" type="button">Save changes</button>
+    <div class="parse-message" id="editMessage" role="status" aria-live="polite"></div>
+  </dialog>
+
   <iframe class="submission-frame" id="submissionFrame" name="submissionFrame" title="Sentence submission response"></iframe>
 
   <template id="cardTemplate">
     <article class="sentence-card">
-      <div class="card-top"><span class="category-pill"></span><div class="card-admin"><span class="record-id"></span><button class="card-delete-button" type="button" aria-label="Delete sentence" title="Delete sentence">Delete</button></div></div>
+      <div class="card-top"><span class="category-pill"></span><div class="card-admin"><span class="record-id"></span><button class="card-edit-button" type="button" aria-label="Edit sentence" title="Edit sentence">Edit</button><button class="card-delete-button" type="button" aria-label="Delete sentence" title="Delete sentence">Delete</button></div></div>
       <div class="hindi-row"><p class="hindi"></p><button class="hindi-speak-button" type="button" aria-label="Play source-language pronunciation">▶</button></div>
       <p class="roman-hindi"></p>
       <div class="chinese-row"><h3 class="chinese"></h3><button class="speak-button" type="button" aria-label="Play Taiwanese Mandarin pronunciation">▶</button></div>
@@ -308,7 +332,7 @@
 
   <script src="language-config.js?v=20260918-1"></script>
   <script src="pilot/pilot-curriculum-data.js?v=20260926-1"></script>
-  <script src="app.js?v=20260926-v3-13"></script>
+  <script src="app.js?v=20260926-v3-14"></script>
   <script type="module" src="firebase-auth.js?v=20260919-4"></script>
   <script type="module" src="firebase-tts.js?v=20260919-1"></script>
   <script type="module" src="firebase-store.js?v=20260919-3"></script>
