@@ -127,3 +127,22 @@ body[data-access="approved"] .access-gate {
 .teacher-admin-button:hover {
   background: #e6f7f2;
 }
+
+/* ---- Shared Curriculum (V3 pilot) ---- */
+.shared-curriculum { max-width: 1080px; margin: 0 auto; padding: 32px 20px 8px; }
+.pilot-badge { display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.08em;
+  color:#fff; background:#ef493a; border-radius:999px; padding:4px 12px; white-space:nowrap; }
+.curriculum-lang-row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:14px 0 4px; }
+.draft-note-inline { font-size:.82rem; color:#8a6d1a; background:#fff8e1; border:1px solid #f0e0a8;
+  border-radius:8px; padding:6px 12px; }
+.curriculum-lesson { display:flex; align-items:center; justify-content:space-between; gap:12px;
+  flex-wrap:wrap; margin:14px 0 10px; }
+.curriculum-lesson h3 { margin:0; font-size:1.15rem; }
+.curriculum-lesson h3 small { font-weight:400; color:#777; font-size:.82rem; }
+.curriculum-tabs { margin-bottom:14px; }
+.curriculum-readonly { font-size:.75rem; color:#8a6d1a; background:#fff8e1; border:1px solid #f0e0a8;
+  border-radius:999px; padding:3px 10px; white-space:nowrap; }
+.curriculum-speaker { display:inline-block; font-size:.78rem; font-weight:600; color:#0b6e4f;
+  background:#e6f4ee; border-radius:6px; padding:2px 8px; margin-bottom:6px; }
+.curriculum-actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.curriculum-actions .secondary-button { font-size:.85rem; padding:8px 12px; }
